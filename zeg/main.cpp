@@ -3,26 +3,23 @@
 #include <unordered_set>
 using namespace std;
 
-struct wyspa {
+struct island {
   long x;
   long y;
 
-  bool operator==(const wyspa &p) const { return x == p.x && y == p.y; }
+  bool operator==(const island &p) const { return x == p.x && y == p.y; }
 };
 
 struct wyspaHash {
-  std::size_t operator()(const wyspa &p) const {
+  std::size_t operator()(const island &p) const {
     return std::hash<long>()(p.x) ^ (std::hash<long>()(p.y) << 8);
   }
 };
 
-inline const bool canAcces(const wyspa &A, const wyspa &B) {
+inline const bool canAcces(const island &A, const island &B) {
   return (A.x < B.x && A.y < B.y) || (A.x > B.x && A.y > B.y);
 }
 
-inline const bool equal(const wyspa &A, const wyspa &B) {
-  return (A.x == B.x && A.y == B.y);
-}
 
 int main() {
   ios::sync_with_stdio(false);
@@ -32,7 +29,7 @@ int main() {
   cin >> n;
   cin.ignore();
 
-  wyspa islands[n];
+  island islands[n];
   int sortLen = sizeof(islands) / sizeof(islands[0]);
 
   for (long i = 0; i < n; i++) {
@@ -43,21 +40,21 @@ int main() {
   }
 
   for (long i = 0; i < n; i++) {
-    wyspa curr = islands[i];
+    island curr = islands[i];
     int acc = n - 1;
     int depth = 1;
 
-    wyspa LeftMost = curr;
-    wyspa RightMost = curr;
-    wyspa UppMost = curr;
-    wyspa DownMost = curr;
+    island LeftMost = curr;
+    island RightMost = curr;
+    island UppMost = curr;
+    island DownMost = curr;
 
-    std::unordered_set<wyspa, wyspaHash> cantacces;
+    std::unordered_set<island, wyspaHash> cantacces;
 
     for (long j = 0; j < n; j++) {
       if (j == i)
         continue;
-      wyspa is = islands[j];
+      island is = islands[j];
       if (canAcces(curr, is)) {
         if (is.x < LeftMost.x)
           LeftMost = is;
@@ -74,11 +71,11 @@ int main() {
 
     do {
       // copy variables
-      std::unordered_set<wyspa, wyspaHash> newCantacces;
-      wyspa newLeftMost = LeftMost;
-      wyspa newRightMost = RightMost;
-      wyspa newUppMost = UppMost;
-      wyspa newDownMost = DownMost;
+      std::unordered_set<island, wyspaHash> newCantacces;
+      island newLeftMost = LeftMost;
+      island newRightMost = RightMost;
+      island newUppMost = UppMost;
+      island newDownMost = DownMost;
 
       acc += cantacces.size();
       depth++;
@@ -114,7 +111,7 @@ int main() {
       DownMost = newDownMost;
       LeftMost = newLeftMost;
       RightMost = newRightMost;
-      // cout << "running  " << cantacces.size() << "\n";
+      // cout << "running  " << cantacces.size() << " " << depth << "\n";
 
     } while (cantacces.size() > 0);
 
