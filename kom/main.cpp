@@ -30,8 +30,8 @@ struct CachePointHash {
 };
 
 int main() {
-  // ios::sync_with_stdio(false);
-  // cin.tie(nullptr);
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
 
   long n; // ilosc komnat
   long m; // dlugosc mapy
@@ -64,11 +64,15 @@ int main() {
     if (moveCache.contains({seqIndex, curr})) {
       long firstOccurence = moveCache[{seqIndex, curr}];
       long loopDuration = i - firstOccurence;
+      // calculate how many times we can complete loop before getting exhausted
       long loopCount = (m * k - i) / loopDuration;
       i += loopDuration * loopCount;
+      if (i == k * m)
+        break;
+    } else {
+      moveCache[{seqIndex, curr}] = i;
     }
 
-    moveCache[{seqIndex, curr}] = i;
 
     const komnata &kom = komnaty[curr];
     char move = seq[seqIndex];
