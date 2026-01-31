@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <unordered_map>
 #include <utility>
 using namespace std;
@@ -12,90 +14,81 @@ inline const bool canAcces(const wyspa &A, const wyspa &B) {
   return (A.x < B.x && A.y < B.y) || (A.x > B.x && A.y > B.y);
 }
 
-struct PairHash {
-  template <class T1, class T2>
-  std::size_t operator()(const std::pair<T1, T2> &p) const {
-    auto h1 = std::hash<T1>{}(p.first);
-    auto h2 = std::hash<T2>{}(p.second);
-    return h1 ^ (h2 << 1);
-  }
-};
+int solve(const wyspa *islands, const wyspa *upSorted, const wyspa *downSorted,
+          const wyspa *leftSorted, const wyspa *rightSorted, const wyspa &A,
+          const wyspa &B) {
 
-struct PairEqual {
-  template <class T1, class T2>
-  bool operator()(const std::pair<T1, T2> &p1,
-                  const std::pair<T1, T2> &p2) const {
-    return p1.first == p2.first && p1.second == p2.second;
+  if (canAcces(A, B)) {
+    return 1;
   }
-};
+
+
+  return 0;
+}
 
 int main() {
-  ios::sync_with_stdio(false);
-  cin.tie(nullptr);
+  // ios::sync_with_stdio(false);
+  // cin.tie(nullptr);
 
   long n;
   cin >> n;
   cin.ignore();
 
   wyspa islands[n];
+  wyspa upSorted[n];
+  wyspa downSorted[n];
+  wyspa leftSorted[n];
+  wyspa rightSorted[n];
+  int sortLen = sizeof(islands) / sizeof(islands[0]);
 
   for (long i = 0; i < n; i++) {
     long x, y;
     cin >> x >> y;
     cin.ignore();
     islands[i] = {x, y};
+    upSorted[i] = {x, y};
+    downSorted[i] = {x, y};
+    leftSorted[i] = {x, y};
+    rightSorted[i] = {x, y};
   }
 
-  unordered_map<std::pair<int, int>, int, PairHash, PairEqual> data;
+  // sort stuff
 
-  // first pass
+  // up first, then left
+  sort(upSorted, upSorted + sortLen, [](wyspa &a, wyspa &b) {
+    if (a.y != b.y)
+      return a.y < b.y;
+    return a.x < b.x;
+  });
+
+  // down first, then right
+  sort(downSorted, downSorted + sortLen, [](wyspa &a, wyspa &b) {
+    if (a.y != b.y)
+      return a.y > b.y;
+    return a.x > b.x;
+  });
+
+  // left first, then up
+  sort(leftSorted, leftSorted + sortLen, [](wyspa &a, wyspa &b) {
+    if (a.x != b.x)
+      return a.x < b.x;
+    return a.y < b.y;
+  });
+
+  // right first, then down
+  sort(rightSorted, rightSorted + sortLen, [](wyspa &a, wyspa &b) {
+    if (a.x != b.x)
+      return a.x > b.x;
+    return a.y > b.y;
+  });
+
   for (long i = 0; i < n; i++) {
-    for (long j = i; j < n; j++) {
-      if (!data.contains(std::make_pair(i, j)) &&
-          canAcces(islands[i], islands[j])) {
-        data[std::make_pair(i, j)] = 1;
-        data[std::make_pair(j, i)] = 1;
-      }
-    }
-  }
-
-  // connect stuff
-  while (data.size() < n * n - n) {
-    for (const auto &[key, stepsA] : data) {
-      auto [from, via] = key;
-
-      for (const auto &[key, stepsB] : data) {
-        auto [to, via2] = key;
-        if (via != via2)
-          continue;
-        if (from == to)
-          continue;
-
-        // connect!
-        if (!data.contains(std::make_pair(from, to))) {
-          data[std::make_pair(from, to)] = stepsA + stepsB;
-          data[std::make_pair(to, from)] = stepsA + stepsB;
-        } else {
-          int numSteps = data[std::make_pair(from, to)];
-          if (stepsA + stepsB < numSteps) {
-            data[std::make_pair(from, to)] = stepsA + stepsB;
-            data[std::make_pair(to, from)] = stepsA + stepsB;
-          }
-        }
-      }
-    }
-  }
-
-  // print data
-  for (int i = 0; i < n; i++) {
+    wyspa curr = islands[i];
     int acc = 0;
-
-    for (const auto &[key, value] : data) {
-      auto [a, b] = key;
-      if (a == i) {
-        acc += value;
-      }
+    for (long j = 0; j < n; j++) {
+      wyspa dist = islands[i];
+      acc += solve(islands, upSorted, downSorted, leftSorted, rightSorted, curr,
+                   dist);
     }
-    cout << acc << "\n";
   }
 }
