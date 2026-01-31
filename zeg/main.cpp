@@ -1,14 +1,19 @@
-#include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <iterator>
-#include <unordered_map>
-#include <utility>
+#include <unordered_set>
 using namespace std;
 
 struct wyspa {
   long x;
   long y;
+
+  bool operator==(const wyspa &p) const { return x == p.x && y == p.y; }
+};
+
+struct wyspaHash {
+  std::size_t operator()(const wyspa &p) const {
+    return std::hash<long>()(p.x) ^ (std::hash<long>()(p.y) << 8);
+  }
 };
 
 inline const bool canAcces(const wyspa &A, const wyspa &B) {
@@ -19,57 +24,15 @@ inline const bool equal(const wyspa &A, const wyspa &B) {
   return (A.x == B.x && A.y == B.y);
 }
 
-int solve(const wyspa *islands, const wyspa *upSorted, const wyspa *downSorted,
-          const wyspa *leftSorted, const wyspa *rightSorted, const wyspa &A,
-          const wyspa &B) {
-
-  if (canAcces(A, B)) {
-    return 1;
-  }
-
-  // find edge points
-  long powA = A.x - A.y;
-  long powB = B.x - B.y;
-
-  if (powA > powB) {
-    // searching in bottom-left
-
-    // assert(false);
-
-  } else {
-    // searching in top-right
-    cout << A.x << " " << A.y << "\n";
-    cout << B.x << " " << B.y << "\n\n";
-
-    int i = 0;
-    int j = 0;
-    wyspa topMost = upSorted[i];
-    wyspa rightMost = rightSorted[j];
-    while (!canAcces(A, topMost) && equal(A, topMost))
-      topMost = upSorted[++i];
-
-    while (!canAcces(A, rightMost) && equal(A, rightMost))
-      rightMost = rightSorted[++j];
-
-    cout  << "?? " << (equal(A, rightMost)) << " " << (equal(A, topMost)) << "\n";
-  }
-
-  return 0;
-}
-
 int main() {
-  // ios::sync_with_stdio(false);
-  // cin.tie(nullptr);
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
 
   long n;
   cin >> n;
   cin.ignore();
 
   wyspa islands[n];
-  wyspa upSorted[n];
-  wyspa downSorted[n];
-  wyspa leftSorted[n];
-  wyspa rightSorted[n];
   int sortLen = sizeof(islands) / sizeof(islands[0]);
 
   for (long i = 0; i < n; i++) {
@@ -77,52 +40,83 @@ int main() {
     cin >> x >> y;
     cin.ignore();
     islands[i] = {x, y};
-    upSorted[i] = {x, y};
-    downSorted[i] = {x, y};
-    leftSorted[i] = {x, y};
-    rightSorted[i] = {x, y};
   }
-
-  // sort stuff
-
-  // up first, then left
-  sort(upSorted, upSorted + sortLen, [](wyspa &a, wyspa &b) {
-    if (a.y != b.y)
-      return a.y < b.y;
-    return a.x < b.x;
-  });
-
-  // down first, then right
-  sort(downSorted, downSorted + sortLen, [](wyspa &a, wyspa &b) {
-    if (a.y != b.y)
-      return a.y > b.y;
-    return a.x > b.x;
-  });
-
-  // left first, then up
-  sort(leftSorted, leftSorted + sortLen, [](wyspa &a, wyspa &b) {
-    if (a.x != b.x)
-      return a.x < b.x;
-    return a.y < b.y;
-  });
-
-  // right first, then down
-  sort(rightSorted, rightSorted + sortLen, [](wyspa &a, wyspa &b) {
-    if (a.x != b.x)
-      return a.x > b.x;
-    return a.y > b.y;
-  });
 
   for (long i = 0; i < n; i++) {
     wyspa curr = islands[i];
-    int acc = 0;
+    int acc = n - 1;
+
+    wyspa LeftMost = curr;
+    wyspa RightMost = curr;
+    wyspa UppMost = curr;
+    wyspa DownMost = curr;
+
+    std::unordered_set<wyspa, wyspaHash> cantacces;
+
     for (long j = 0; j < n; j++) {
       if (j == i)
         continue;
-      wyspa dist = islands[j];
-      acc += solve(islands, upSorted, downSorted, leftSorted, rightSorted, curr,
-                   dist);
+      wyspa is = islands[j];
+      if (canAcces(curr, is)) {
+        if (is.x < LeftMost.x)
+          LeftMost = is;
+        if (is.y < UppMost.y)
+          UppMost = is;
+        if (is.x > RightMost.x)
+          RightMost = is;
+        if (is.y > DownMost.y)
+          DownMost = is;
+      } else {
+        cantacces.insert(is);
+      }
     }
-    return 0;
+
+    do {
+      // copy variables
+      std::unordered_set<wyspa, wyspaHash> newCantacces;
+      wyspa newLeftMost = LeftMost;
+      wyspa newRightMost = RightMost;
+      wyspa newUppMost = UppMost;
+      wyspa newDownMost = DownMost;
+
+      acc += cantacces.size();
+
+      // run logic
+
+      for (const auto &is : cantacces) {
+        // cout << is.x << " " << is.y << "\n";
+        // cout << "from " << curr.x << " " << curr.y << "\n";
+        // cout << "leftmost " << LeftMost.x << " " << LeftMost.y << "\n";
+        // cout << "rightmost " << RightMost.x << " " << RightMost.y << "\n";
+        // cout << "downmost " << DownMost.x << " " << DownMost.y << "\n";
+        // cout << "upmose " << UppMost.x << " " << UppMost.y << "\n";
+
+        if (canAcces(curr, is) || canAcces(LeftMost, is) ||
+            canAcces(RightMost, is) || canAcces(UppMost, is) ||
+            canAcces(DownMost, is)) {
+          if (is.x < newLeftMost.x)
+            newLeftMost = is;
+          if (is.y < newUppMost.y)
+            newUppMost = is;
+          if (is.x > newRightMost.x)
+            newRightMost = is;
+          if (is.y > newDownMost.y)
+            newDownMost = is;
+        } else {
+          newCantacces.insert(is);
+        }
+      }
+
+      // set new variables
+      cantacces = newCantacces;
+      UppMost = newUppMost;
+      DownMost = newDownMost;
+      LeftMost = newLeftMost;
+      RightMost = newRightMost;
+      // cout << "running  " << cantacces.size() << "\n";
+
+    } while (cantacces.size() > 0);
+
+    cout << acc << "\n";
   }
 }
