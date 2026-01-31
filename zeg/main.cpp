@@ -20,7 +20,6 @@ inline const bool canAcces(const island &A, const island &B) {
   return (A.x < B.x && A.y < B.y) || (A.x > B.x && A.y > B.y);
 }
 
-
 int main() {
   ios::sync_with_stdio(false);
   cin.tie(nullptr);
@@ -41,80 +40,91 @@ int main() {
 
   for (long i = 0; i < n; i++) {
     island curr = islands[i];
+    cout << "curr " << curr.x << " " << curr.y << "\n";
     int acc = n - 1;
-    int depth = 1;
+    long currEnergy = curr.x - curr.y;
 
-    island LeftMost = curr;
-    island RightMost = curr;
-    island UppMost = curr;
-    island DownMost = curr;
+    std::unordered_set<island, wyspaHash> topRight;
+    std::unordered_set<island, wyspaHash> bottomLeft;
 
-    std::unordered_set<island, wyspaHash> cantacces;
+    long topRightTop = curr.y;
+    long topRightRight = curr.x;
+
+    long bottomLeftBottom = curr.y;
+    long bottomLeftLeft = curr.x;
 
     for (long j = 0; j < n; j++) {
+      
       if (j == i)
-        continue;
-      island is = islands[j];
+      continue;
+    island is = islands[j];
+      long energy = is.x - is.y;
+      bool side = energy < currEnergy;
+
       if (canAcces(curr, is)) {
-        if (is.x < LeftMost.x)
-          LeftMost = is;
-        if (is.y < UppMost.y)
-          UppMost = is;
-        if (is.x > RightMost.x)
-          RightMost = is;
-        if (is.y > DownMost.y)
-          DownMost = is;
+        cout << "canaccess " << is.x << " " << is.y << "\n";
+
+        if (side) {
+          topRightTop = min(topRightTop, is.x);
+          topRightRight = min(topRightRight, is.y);
+        } else {
+          bottomLeftLeft = max(bottomLeftLeft, is.x);
+          bottomLeftBottom = max(bottomLeftBottom, is.y);
+        }
       } else {
-        cantacces.insert(is);
+        if (side) {
+          topRight.insert(is);
+        } else {
+          bottomLeft.insert(is);
+        }
       }
     }
 
-    do {
-      // copy variables
-      std::unordered_set<island, wyspaHash> newCantacces;
-      island newLeftMost = LeftMost;
-      island newRightMost = RightMost;
-      island newUppMost = UppMost;
-      island newDownMost = DownMost;
+    cout << topRight.size() << " " << bottomLeft.size() << "\n";
+    cout << bottomLeftLeft << " " << bottomLeftBottom << "\n";
 
-      acc += cantacces.size();
-      depth++;
+    // do {
+    //   // copy variables
+    //   std::unordered_set<island, wyspaHash> newCantacces;
 
-      // run logic
-      for (const auto &is : cantacces) {
-        // cout << is.x << " " << is.y << "\n";
-        // cout << "from " << curr.x << " " << curr.y << "\n";
-        // cout << "leftmost " << LeftMost.x << " " << LeftMost.y << "\n";
-        // cout << "rightmost " << RightMost.x << " " << RightMost.y << "\n";
-        // cout << "downmost " << DownMost.x << " " << DownMost.y << "\n";
-        // cout << "upmose " << UppMost.x << " " << UppMost.y << "\n";
+    //   acc += topLeft.size();
 
-        if (canAcces(curr, is) || canAcces(LeftMost, is) ||
-            canAcces(RightMost, is) || canAcces(UppMost, is) ||
-            canAcces(DownMost, is)) {
-          if (is.x < newLeftMost.x)
-            newLeftMost = is;
-          if (is.y < newUppMost.y)
-            newUppMost = is;
-          if (is.x > newRightMost.x)
-            newRightMost = is;
-          if (is.y > newDownMost.y)
-            newDownMost = is;
-        } else {
-          newCantacces.insert(is);
-        }
-      }
+    //   // run logic
+    //   for (const auto &is : topLeft) {
+    //     // cout << is.x << " " << is.y << "\n";
+    //     // cout << "from " << curr.x << " " << curr.y << "\n";
+    //     // cout << "leftmost " << LeftMost.x << " " << LeftMost.y << "\n";
+    //     // cout << "rightmost " << RightMost.x << " " << RightMost.y << "\n";
+    //     // cout << "downmost " << DownMost.x << " " << DownMost.y << "\n";
+    //     // cout << "upmose " << UppMost.x << " " << UppMost.y << "\n";
 
-      // set new variables
-      cantacces = newCantacces;
-      UppMost = newUppMost;
-      DownMost = newDownMost;
-      LeftMost = newLeftMost;
-      RightMost = newRightMost;
-      // cout << "running  " << cantacces.size() << " " << depth << "\n";
+    //     if (canAcces(curr, is) || canAcces(LeftMost, is) ||
+    //         canAcces(RightMost, is) || canAcces(UppMost, is) ||
+    //         canAcces(DownMost, is)) {
+    //       if (is.x < newLeftMost.x)
+    //         newLeftMost = is;
+    //       if (is.y < newUppMost.y)
+    //         newUppMost = is;
+    //       if (is.x > newRightMost.x)
+    //         newRightMost = is;
+    //       if (is.y > newDownMost.y)
+    //         newDownMost = is;
+    //     } else {
+    //       newCantacces.insert(is);
+    //     }
+    //   }
 
-    } while (cantacces.size() > 0);
+    //   // set new variables
+    //   topLeft = newCantacces;
+    //   UppMost = newUppMost;
+    //   DownMost = newDownMost;
+    //   LeftMost = newLeftMost;
+    //   RightMost = newRightMost;
+    //   // cout << "running  " << cantacces.size() << " " << depth << "\n";
+
+    // } while (topLeft.size() > 0);
 
     cout << acc << "\n";
+    return 0;
   }
 }
