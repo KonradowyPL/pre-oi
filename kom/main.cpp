@@ -1,4 +1,6 @@
+#include <cassert>
 #include <iostream>
+#include <unordered_map>
 using namespace std;
 
 #define MAX_N 1000 + 1
@@ -10,6 +12,21 @@ const char p = 'P';
 struct komnata {
   long lewa;
   long prawa;
+};
+
+struct cachePoint {
+  long seqIndex;
+  long curr;
+
+  bool operator==(const cachePoint &b) const {
+    return (curr == b.curr && seqIndex == b.seqIndex);
+  }
+};
+
+struct CachePointHash {
+  size_t operator()(const cachePoint &p) const noexcept {
+    return std::hash<long>{}(p.seqIndex) ^ (std::hash<long>{}(p.curr) << 1);
+  }
 };
 
 int main() {
@@ -31,29 +48,39 @@ int main() {
     cin >> lewa >> prawa;
     cin.ignore();
     komnaty[i + 1] = {lewa, prawa};
-    // cout << lewa << " " << prawa << '\n';
   }
 
   std::string seq;
   cin >> seq;
 
-  // cout << "seq " << seq << "\n";
+  std::unordered_map<cachePoint, long, CachePointHash> moveCache;
 
   long seqIndex = 0;
   long curr = 1;
 
   for (long i = 0; i < k * m; i++) {
+
+    // has reached this point before
+    if (moveCache.contains({seqIndex, curr})) {
+      long firstOccurence = moveCache[{seqIndex, curr}];
+      long loopDuration = i - firstOccurence;
+      long loopCount = (m * k - i) / loopDuration;
+      i += loopDuration * loopCount;
+    }
+
+    moveCache[{seqIndex, curr}] = i;
+
     const komnata &kom = komnaty[curr];
     char move = seq[seqIndex];
-    // cout << "Jest w " << curr << " seq: " << move << "\n";
 
     seqIndex += 1;
     seqIndex %= m;
 
-    // lewo
     if (move == l) {
+      // lewo
       curr = kom.lewa;
     } else {
+      // prawo
       curr = kom.prawa;
     }
   }
