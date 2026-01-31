@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 #include <iterator>
 #include <unordered_map>
@@ -14,6 +15,10 @@ inline const bool canAcces(const wyspa &A, const wyspa &B) {
   return (A.x < B.x && A.y < B.y) || (A.x > B.x && A.y > B.y);
 }
 
+inline const bool equal(const wyspa &A, const wyspa &B) {
+  return (A.x == B.x && A.y == B.y);
+}
+
 int solve(const wyspa *islands, const wyspa *upSorted, const wyspa *downSorted,
           const wyspa *leftSorted, const wyspa *rightSorted, const wyspa &A,
           const wyspa &B) {
@@ -22,6 +27,32 @@ int solve(const wyspa *islands, const wyspa *upSorted, const wyspa *downSorted,
     return 1;
   }
 
+  // find edge points
+  long powA = A.x - A.y;
+  long powB = B.x - B.y;
+
+  if (powA > powB) {
+    // searching in bottom-left
+
+    // assert(false);
+
+  } else {
+    // searching in top-right
+    cout << A.x << " " << A.y << "\n";
+    cout << B.x << " " << B.y << "\n\n";
+
+    int i = 0;
+    int j = 0;
+    wyspa topMost = upSorted[i];
+    wyspa rightMost = rightSorted[j];
+    while (!canAcces(A, topMost) && equal(A, topMost))
+      topMost = upSorted[++i];
+
+    while (!canAcces(A, rightMost) && equal(A, rightMost))
+      rightMost = rightSorted[++j];
+
+    cout  << "?? " << (equal(A, rightMost)) << " " << (equal(A, topMost)) << "\n";
+  }
 
   return 0;
 }
@@ -86,9 +117,12 @@ int main() {
     wyspa curr = islands[i];
     int acc = 0;
     for (long j = 0; j < n; j++) {
-      wyspa dist = islands[i];
+      if (j == i)
+        continue;
+      wyspa dist = islands[j];
       acc += solve(islands, upSorted, downSorted, leftSorted, rightSorted, curr,
                    dist);
     }
+    return 0;
   }
 }
