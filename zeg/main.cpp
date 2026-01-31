@@ -82,7 +82,7 @@ int main() {
     // cout << "bonuds " << bottomLeftLeft << " " << bottomLeftBottom << "\n";
 
     // BOTTOM LEFT LOOP
-    do {
+    while (!bottomLeft.empty()) {
 
       long newBottomLeftBottom = bottomLeftBottom;
       long newBottomLeftLeft = bottomLeftLeft;
@@ -108,11 +108,10 @@ int main() {
       bottomLeftBottom = newBottomLeftBottom;
       bottomLeftLeft = newBottomLeftLeft;
       // cout << "iteration\n";
-
-    } while (bottomLeft.size() > 0);
+    };
 
     // TOP RIGHT LOOP
-    do {
+    while (!topRight.empty()) {
 
       long newTopRightTop = topRightTop;
       long newTopRightRight = topRightRight;
@@ -135,9 +134,7 @@ int main() {
 
       topRightTop = newTopRightTop;
       topRightRight = newTopRightRight;
-
-    } while (topRight.size() > 0);
-
+    };
 
     cout << acc << "\n";
   }
