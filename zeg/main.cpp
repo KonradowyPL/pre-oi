@@ -21,8 +21,8 @@ inline const bool canAcces(const island &A, const island &B) {
 }
 
 int main() {
-  ios::sync_with_stdio(false);
-  cin.tie(nullptr);
+  // ios::sync_with_stdio(false);
+  // cin.tie(nullptr);
 
   long n;
   cin >> n;
@@ -54,23 +54,21 @@ int main() {
     long bottomLeftLeft = curr.x;
 
     for (long j = 0; j < n; j++) {
-      
+
       if (j == i)
-      continue;
-    island is = islands[j];
+        continue;
+      island is = islands[j];
       long energy = is.x - is.y;
       bool side = energy < currEnergy;
 
       if (canAcces(curr, is)) {
-        cout << "canaccess " << is.x << " " << is.y << "\n";
+        // cout << "canaccess " << is.x << " " << is.y << "\n";
 
-        if (side) {
-          topRightTop = min(topRightTop, is.x);
-          topRightRight = min(topRightRight, is.y);
-        } else {
-          bottomLeftLeft = max(bottomLeftLeft, is.x);
-          bottomLeftBottom = max(bottomLeftBottom, is.y);
-        }
+        topRightRight = max(topRightRight, is.x);
+        topRightTop = min(topRightTop, is.y);
+
+        bottomLeftLeft = max(bottomLeftLeft, is.x);
+        bottomLeftBottom = min(bottomLeftBottom, is.y);
       } else {
         if (side) {
           topRight.insert(is);
@@ -80,51 +78,67 @@ int main() {
       }
     }
 
-    cout << topRight.size() << " " << bottomLeft.size() << "\n";
-    cout << bottomLeftLeft << " " << bottomLeftBottom << "\n";
+    // cout << topRight.size() << " " << bottomLeft.size() << "\n";
+    // cout << "bonuds " << bottomLeftLeft << " " << bottomLeftBottom << "\n";
 
-    // do {
-    //   // copy variables
-    //   std::unordered_set<island, wyspaHash> newCantacces;
+    // BOTTOM LEFT LOOP
+    do {
 
-    //   acc += topLeft.size();
+      long newBottomLeftBottom = bottomLeftBottom;
+      long newBottomLeftLeft = bottomLeftLeft;
+      acc += bottomLeft.size();
 
-    //   // run logic
-    //   for (const auto &is : topLeft) {
-    //     // cout << is.x << " " << is.y << "\n";
-    //     // cout << "from " << curr.x << " " << curr.y << "\n";
-    //     // cout << "leftmost " << LeftMost.x << " " << LeftMost.y << "\n";
-    //     // cout << "rightmost " << RightMost.x << " " << RightMost.y << "\n";
-    //     // cout << "downmost " << DownMost.x << " " << DownMost.y << "\n";
-    //     // cout << "upmose " << UppMost.x << " " << UppMost.y << "\n";
+      // bottomLeft calculations
+      for (auto it = bottomLeft.begin(); it != bottomLeft.end();) {
+        auto is = *it;
+        if (is.x < bottomLeftLeft || is.y > bottomLeftBottom) {
+          // cout << "new acc " << is.x << " " << is.y << "\n";
 
-    //     if (canAcces(curr, is) || canAcces(LeftMost, is) ||
-    //         canAcces(RightMost, is) || canAcces(UppMost, is) ||
-    //         canAcces(DownMost, is)) {
-    //       if (is.x < newLeftMost.x)
-    //         newLeftMost = is;
-    //       if (is.y < newUppMost.y)
-    //         newUppMost = is;
-    //       if (is.x > newRightMost.x)
-    //         newRightMost = is;
-    //       if (is.y > newDownMost.y)
-    //         newDownMost = is;
-    //     } else {
-    //       newCantacces.insert(is);
-    //     }
-    //   }
+          newBottomLeftLeft = max(newBottomLeftLeft, is.x);
+          newBottomLeftBottom = min(newBottomLeftBottom, is.y);
+          // cout << "bounds " << bottomLeftLeft << " " << bottomLeftBottom
+          //      << "\n";
 
-    //   // set new variables
-    //   topLeft = newCantacces;
-    //   UppMost = newUppMost;
-    //   DownMost = newDownMost;
-    //   LeftMost = newLeftMost;
-    //   RightMost = newRightMost;
-    //   // cout << "running  " << cantacces.size() << " " << depth << "\n";
+          it = bottomLeft.erase(it);
+        } else {
+          it++;
+        }
+      }
 
-    // } while (topLeft.size() > 0);
+      bottomLeftBottom = newBottomLeftBottom;
+      bottomLeftLeft = newBottomLeftLeft;
+      // cout << "iteration\n";
+
+    } while (bottomLeft.size() > 0);
+
+    // TOP RIGHT LOOP
+    do {
+
+      long newTopRightTop = topRightTop;
+      long newTopRightRight = topRightRight;
+      acc += topRight.size();
+
+      // topRight calculations
+      for (auto it = topRight.begin(); it != topRight.end();) {
+        auto is = *it;
+        if (is.x < topRightRight || is.y > topRightTop) {
+          // cout << "new acc " << is.x << " " << is.y << "\n";
+
+          newTopRightRight = max(newTopRightRight, is.x);
+          newTopRightTop = min(newTopRightTop, is.y);
+
+          it = topRight.erase(it);
+        } else {
+          it++;
+        }
+      }
+
+      topRightTop = newTopRightTop;
+      topRightRight = newTopRightRight;
+
+    } while (topRight.size() > 0);
+
 
     cout << acc << "\n";
-    return 0;
   }
 }
