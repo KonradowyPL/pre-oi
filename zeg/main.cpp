@@ -45,6 +45,7 @@ int main() {
   for (long i = 0; i < n; i++) {
     wyspa curr = islands[i];
     int acc = n - 1;
+    int depth = 1;
 
     wyspa LeftMost = curr;
     wyspa RightMost = curr;
@@ -80,9 +81,9 @@ int main() {
       wyspa newDownMost = DownMost;
 
       acc += cantacces.size();
+      depth++;
 
       // run logic
-
       for (const auto &is : cantacces) {
         // cout << is.x << " " << is.y << "\n";
         // cout << "from " << curr.x << " " << curr.y << "\n";
