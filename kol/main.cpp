@@ -5,8 +5,8 @@
 using namespace std;
 
 int main() {
-  // ios::sync_with_stdio(false);
-  // cin.tie(nullptr);
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
 
   int Z;
   cin >> Z;
@@ -30,26 +30,48 @@ int main() {
     for (int j = 0; j < q; j++) {
       long a, b;
       cin >> a >> b;
+
+      if (a == b) {
+        cout << 0 << "\n";
+        continue;
+      }
+
       long acc = 0;
+
       long activeA = 0;
       long activeB = 0;
+      long activeSum = 0;
+
       long passedA = 0;
       long passedB = 0;
-      long aCount = counter[a];
-      long bCount = counter[b];
+
+      long remainingA = counter[a];
+      long remainingB = counter[b];
 
       for (auto ele : points) {
         if (ele == a) {
           activeA -= passedB;
-          activeB += bCount - passedB; // remaining B
+          activeSum -= passedB;
+
+          activeB += remainingB;
+          activeSum += remainingB;
+
           passedA++;
+          remainingA--;
         } else if (ele == b) {
           activeB -= passedA;
-          activeA += aCount - passedA; // remaining A
+          activeSum -= passedA;
+
+          activeA += remainingA;
+          activeSum += remainingA;
+
           passedB++;
+          remainingB--;
         }
-        acc += activeB + activeA;
+
+        acc += activeSum;
       }
+
       cout << acc << "\n";
     }
   }
