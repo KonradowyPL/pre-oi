@@ -40,7 +40,6 @@ int main() {
 
   for (long i = 0; i < n; i++) {
     island curr = islands[i];
-    cout << "curr " << curr.x << " " << curr.y << "\n";
     int acc = n - 1;
     long currEnergy = curr.x - curr.y;
 
@@ -62,11 +61,8 @@ int main() {
       bool side = energy < currEnergy;
 
       if (canAcces(curr, is)) {
-        // cout << "canaccess " << is.x << " " << is.y << "\n";
-
-        topRightRight = max(topRightRight, is.x);
-        topRightTop = min(topRightTop, is.y);
-
+        topRightRight = min(topRightRight, is.x);
+        topRightTop = max(topRightTop, is.y);
         bottomLeftLeft = max(bottomLeftLeft, is.x);
         bottomLeftBottom = min(bottomLeftBottom, is.y);
       } else {
@@ -77,9 +73,6 @@ int main() {
         }
       }
     }
-
-    // cout << topRight.size() << " " << bottomLeft.size() << "\n";
-    // cout << "bonuds " << bottomLeftLeft << " " << bottomLeftBottom << "\n";
 
     // BOTTOM LEFT LOOP
     while (!bottomLeft.empty()) {
@@ -92,12 +85,9 @@ int main() {
       for (auto it = bottomLeft.begin(); it != bottomLeft.end();) {
         auto is = *it;
         if (is.x < bottomLeftLeft || is.y > bottomLeftBottom) {
-          // cout << "new acc " << is.x << " " << is.y << "\n";
 
           newBottomLeftLeft = max(newBottomLeftLeft, is.x);
           newBottomLeftBottom = min(newBottomLeftBottom, is.y);
-          // cout << "bounds " << bottomLeftLeft << " " << bottomLeftBottom
-          //      << "\n";
 
           it = bottomLeft.erase(it);
         } else {
@@ -107,9 +97,7 @@ int main() {
 
       bottomLeftBottom = newBottomLeftBottom;
       bottomLeftLeft = newBottomLeftLeft;
-      // cout << "iteration\n";
     };
-
     // TOP RIGHT LOOP
     while (!topRight.empty()) {
 
@@ -120,11 +108,9 @@ int main() {
       // topRight calculations
       for (auto it = topRight.begin(); it != topRight.end();) {
         auto is = *it;
-        if (is.x < topRightRight || is.y > topRightTop) {
-          // cout << "new acc " << is.x << " " << is.y << "\n";
-
-          newTopRightRight = max(newTopRightRight, is.x);
-          newTopRightTop = min(newTopRightTop, is.y);
+        if (is.x > topRightRight || is.y < topRightTop) {
+          newTopRightRight = min(newTopRightRight, is.x);
+          newTopRightTop = max(newTopRightTop, is.y);
 
           it = topRight.erase(it);
         } else {
