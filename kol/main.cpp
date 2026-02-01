@@ -5,8 +5,8 @@
 using namespace std;
 
 int main() {
-  ios::sync_with_stdio(false);
-  cin.tie(nullptr);
+  // ios::sync_with_stdio(false);
+  // cin.tie(nullptr);
 
   int Z;
   cin >> Z;
@@ -19,26 +19,24 @@ int main() {
 
     cin >> n >> m >> q;
     vector<long> points(n);
+    vector<long> counter(m + 1);
     for (int j = 0; j < n; j++) {
-      cin >> points[j];
+      long col;
+      cin >> col;
+      points[j] = col;
+      counter[col]++;
     }
+
     for (int j = 0; j < q; j++) {
       long a, b;
       cin >> a >> b;
-      long aCount = 0;
-      long bCount = 0;
-      // first pass: count elements
-      for (auto ele : points) {
-        if (ele == a)
-          aCount++;
-        else if (ele == b)
-          bCount++;
-      }
       long acc = 0;
       long activeA = 0;
       long activeB = 0;
       long passedA = 0;
       long passedB = 0;
+      long aCount = counter[a];
+      long bCount = counter[b];
 
       for (auto ele : points) {
         if (ele == a) {
