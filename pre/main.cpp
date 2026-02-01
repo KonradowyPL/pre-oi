@@ -1,14 +1,11 @@
-#include <cstdlib>
 #include <iostream>
-#include <map>
 #include <set>
-#include <unordered_set>
 #include <vector>
 using namespace std;
 
 int main() {
-  // ios::sync_with_stdio(false);
-  // cin.tie(nullptr);
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
 
   long n; // rozmiar tablicy
   long q; // ilosc zapytan
@@ -19,14 +16,16 @@ int main() {
   for (long i = 0; i < n; i++) {
     long val;
     cin >> val;
-    // I hate that, but it allows to use set & sort everything automatically
-    // (I am lazy)
     tablica[i] = val;
   }
 
   for (long questionNum = 0; questionNum < q; questionNum++) {
-    long l, r, m, k;
+    long l; // start
+    long r; // koniec
+    long m; // rozmiar pamięci
+    long k; // index liczby ktora interesuje wincentego
     cin >> l >> r >> m >> k;
+    // make 0 indexed instead of 1-indexed
     l--;
     r--;
 
@@ -41,7 +40,6 @@ int main() {
     // preload memory
     for (; index < m; index++) {
       memory.insert(tablica[l + index]);
-      // cout << "inserting " << tablica[l + index] << "\n";
     }
 
     // memory larger than subarray
@@ -49,7 +47,7 @@ int main() {
       for (int j = 0; j < k - 1; j++) {
         memory.erase(memory.begin());
       }
-      cout << (*memory.begin()) << "\n";
+      cout << *memory.begin() << "\n";
       continue;
     }
 
@@ -64,14 +62,14 @@ int main() {
 
     // SUCCES: we successfully found k-th smallest
     if (extracted == k - 1 && !memory.empty()) {
-      cout << ((*memory.begin())) << "\n";
+      cout << *memory.begin() << "\n";
     }
     // NO SUCCES: subarray too short
     else {
       long remaining = k - extracted - 1;
       for (int j = 0; j < remaining; j++)
         memory.erase(memory.begin());
-      cout << ((*memory.begin())) << "\n";
+      cout << *memory.begin() << "\n";
     }
   }
 }
