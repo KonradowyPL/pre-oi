@@ -1,5 +1,7 @@
 #include <cstdlib>
 #include <iostream>
+#include <map>
+#include <set>
 #include <unordered_set>
 #include <vector>
 using namespace std;
@@ -12,10 +14,14 @@ int main() {
   long q; // ilosc zapytan
   cin >> n >> q;
 
-  vector<long> tablica(n + 1);
+  vector<long long> tablica(n + 1);
 
   for (long i = 0; i < n; i++) {
-    cin >> tablica[i];
+    long val;
+    cin >> val;
+    // I hate that, but it allows to use set & sort everything automatically (I
+    // am lazy)
+    tablica[i] = (val << 32) + i;
   }
 
   for (long questionNum = 0; questionNum < q; questionNum++) {
@@ -24,42 +30,50 @@ int main() {
     long m; // rozmiar pamięci
     long k; // index liczby ktora interesuje wincentego
     cin >> l >> r >> m >> k;
+    l--;
+    long len = min(r - l + 1, k);
+    m = min(m, len);
+    // cout << "memSize " << m << "\n";
+    // cout << "len " << len << "\n";
 
-    m = min(m , r - l + 1);
-    vector<long> subBoard(r - l + 1);
-    vector<long> newBoard(r - l + 1);
-    vector<long> memory(m);
+    std::set<long long> memory;
 
-    long newBoardIndex = 0;
+    long index = 0; // index at which we read data from original array
 
-    for (long j = 0, index = l - 1; index < r; j++) {
-      subBoard[j] = tablica[index++];
-    }
-
-    // prefill memory
-    long index = 0;
-
+    // read first m bytes from original array
     for (; index < m; index++) {
-      memory[index] = subBoard[index];
+      memory.insert(tablica[index + l]);
+      // cout << "inserting " << (tablica[index + l] >> 32) << "\n";
     }
+
+    long outputed = 0;
 
     // run computation
-    for (; index <= r - l; index++) {
-      // cout << "got value " << subBoard[index] << " " << index << "\n";
-      auto minElement = std::min_element(memory.begin(), memory.end());
-      newBoard[newBoardIndex++] = *minElement;
-      // cout << "min element " << *minElement << "\n";
-      *minElement = subBoard[index];
+    for (; index <= r - l + 1 && outputed != k - 1; index++) {
+      long long value = *memory.begin();
+      // cout << "got value " << (value >> 32) << "\n";
+      // cout << "index " << index << "\n";
+      memory.erase(memory.begin());
+      memory.insert(tablica[index + l]);
+      outputed++;
+      // cout << "inserting " << (tablica[index + l] >> 32) << "\n\n";
     }
 
-    // wypisanie wartości
-    for (; newBoardIndex < r - l + 1;) {
-      auto minElement = std::min_element(memory.begin(), memory.end());
-      newBoard[newBoardIndex++] = *minElement;
-      *minElement = 0xffffffff;
+    if (outputed == k - 1) {
+      cout << "final value " << (*memory.begin() >> 32) << "\n";
+    } else {
+      cout << "TODO:\n";
+      // for (; outputed != k - 1; index++) {
+      //   long long value = *memory.begin();
+      //   cout << "got value " << (value >> 32) << "\n";
+      //   cout << "index " << index << "\n";
+      //   memory.erase(memory.begin());
+      //   outputed++;
+      //   // cout << "inserting " << (tablica[index + l] >> 32) << "\n";
+      // }
+      // cout << "final value " << (*memory.begin() >> 32) << "\n";
     }
-    // cout << "wartosc: " << newBoard[k - 1]  << " " << questionNum << "\n";
-    cout << newBoard[k - 1] << "\n";
+    // cout << "\n\n\n";
 
     // MA MIEJSCE:
     // z tablicy to ramu
