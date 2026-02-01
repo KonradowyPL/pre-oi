@@ -4,19 +4,19 @@
 using namespace std;
 
 int main() {
-  ios::sync_with_stdio(false);
-  cin.tie(nullptr);
+  // ios::sync_with_stdio(false);
+  // cin.tie(nullptr);
 
   long n; // rozmiar tablicy
   long q; // ilosc zapytan
   cin >> n >> q;
 
-  vector<long long> tablica(n + 1);
+  vector<long> tablica(n + 1);
 
   for (long i = 0; i < n; i++) {
     long val;
     cin >> val;
-    tablica[i] = val;
+    tablica[i + 1] = val;
   }
 
   for (long questionNum = 0; questionNum < q; questionNum++) {
@@ -25,51 +25,20 @@ int main() {
     long m; // rozmiar pamięci
     long k; // index liczby ktora interesuje wincentego
     cin >> l >> r >> m >> k;
-    // make 0 indexed instead of 1-indexed
-    l--;
-    r--;
 
+    long p = l + k + m - 2;
     long len = r - l + 1;
-    long effectiveLen = min(len, k);
-    m = min(m, len);
 
-    std::multiset<long long> memory;
+    if (p > r) {
+      std::vector<long> subvector(tablica.begin() + l, tablica.begin() + r + 1);
+      std::sort(subvector.begin(), subvector.end());
+      cout << subvector[k - 1] << "\n";
+    } else {
+      std::vector<long> subvector(tablica.begin() + l, tablica.begin() + p + 1);
+      std::sort(subvector.begin(), subvector.end());
 
-    long index = 0;
-
-    // preload memory
-    for (; index < m; index++) {
-      memory.insert(tablica[l + index]);
-    }
-
-    // memory larger than subarray
-    if (m == len) {
-      for (int j = 0; j < k - 1; j++) {
-        memory.erase(memory.begin());
-      }
-      cout << *memory.begin() << "\n";
-      continue;
-    }
-
-    long extracted = 0;
-
-    while (index < len && extracted < k - 1) {
-      memory.erase(memory.begin()); // remove smallest
-      memory.insert(tablica[l + index]);
-      index++;
-      extracted++;
-    }
-
-    // SUCCES: we successfully found k-th smallest
-    if (extracted == k - 1 && !memory.empty()) {
-      cout << *memory.begin() << "\n";
-    }
-    // NO SUCCES: subarray too short
-    else {
-      long remaining = k - extracted - 1;
-      for (int j = 0; j < remaining; j++)
-        memory.erase(memory.begin());
-      cout << *memory.begin() << "\n";
+      long val = min(subvector[k - 1], tablica[p]);
+      cout << val << "\n";
     }
   }
 }
