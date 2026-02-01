@@ -1,11 +1,12 @@
+#include <cstdlib>
 #include <iostream>
 #include <unordered_set>
 #include <vector>
 using namespace std;
 
 int main() {
-  // ios::sync_with_stdio(false);
-  // cin.tie(nullptr);
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
 
   int Z;
   cin >> Z;
@@ -24,16 +25,34 @@ int main() {
     for (int j = 0; j < q; j++) {
       long a, b;
       cin >> a >> b;
-      long acc = 0;
       long aCount = 0;
       long bCount = 0;
       // first pass: count elements
       for (auto ele : points) {
         if (ele == a)
           aCount++;
-        if (ele == b)
+        else if (ele == b)
           bCount++;
       }
+      long acc = 0;
+      long activeA = 0;
+      long activeB = 0;
+      long passedA = 0;
+      long passedB = 0;
+
+      for (auto ele : points) {
+        if (ele == a) {
+          activeA -= passedB;
+          activeB += bCount - passedB; // remaining B
+          passedA++;
+        } else if (ele == b) {
+          activeB -= passedA;
+          activeA += aCount - passedA; // remaining A
+          passedB++;
+        }
+        acc += activeB + activeA;
+      }
+      cout << acc << "\n";
     }
   }
 }
