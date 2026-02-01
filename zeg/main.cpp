@@ -21,8 +21,8 @@ inline const bool canAcces(const island &A, const island &B) {
 }
 
 int main() {
-  // ios::sync_with_stdio(false);
-  // cin.tie(nullptr);
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
 
   long n;
   cin >> n;
