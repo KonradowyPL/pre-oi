@@ -20,11 +20,23 @@ int main() {
     cin >> n >> m >> q;
     vector<long> points(n);
     vector<long> counter(m + 1);
+    vector<long> firstIndex(m + 1);
+    vector<long> lastIndex(m + 1);
+
+    // fill firstIndex with -1
+    for (int j = 0; j < m + 1; j++) {
+      firstIndex[j] = -1;
+    }
+
     for (int j = 0; j < n; j++) {
       long col;
       cin >> col;
       points[j] = col;
       counter[col]++;
+      lastIndex[col] = j;
+      if (firstIndex[col] == -1) {
+        firstIndex[col] = j;
+      }
     }
 
     for (int j = 0; j < q; j++) {
@@ -48,7 +60,11 @@ int main() {
       long remainingA = counter[a];
       long remainingB = counter[b];
 
-      for (auto ele : points) {
+      long start = min(firstIndex[a], firstIndex[b]);
+      long end = max(lastIndex[a], lastIndex[b]);
+
+      for (long p = start; p < end; p++) {
+        auto ele = points[p];
         if (ele == a) {
           activeA -= passedB;
           activeSum -= passedB;
@@ -67,11 +83,35 @@ int main() {
 
           passedB++;
           remainingB--;
+        } else {
+          acc += activeSum;
+          continue;
         }
 
-        acc += activeSum;
-      }
+        // skip skipping logic
+        if (remainingA > 1 || remainingB > 1) {
+          acc += activeSum;
+          continue;
+        }
 
+        // skip when any remaining is equal to 0
+        if (remainingA != remainingB) {
+          acc += (end - p) * activeSum;
+          break;
+        }
+
+        long newPos = min(lastIndex[a], lastIndex[b]);
+        acc += (newPos - p) * activeSum;
+
+        if (points[newPos] == a) {
+          // remainingA = 0
+          acc += (end - newPos) * counter[a];
+        } else {
+          // remainingB = 0
+          acc += (end - newPos) * counter[b];
+        }
+        break;
+      }
       cout << acc << "\n";
     }
   }
