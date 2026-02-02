@@ -15,11 +15,17 @@ int main() {
     int V = 2 * N;
 
     // construct tree
-    // node index -> [] of all node inexes it connects to
+    // // node index -> [] of all node inexes it connects to
     vector<vector<int>> adj(V + 1);
     // node index -> color (index)
     vector<int> color(V + 1);
+    // color * 2 -> first node
+    // color * 2  + 1-> second node
+    vector<int> colorMap(V + 2);
 
+    vector<int> colorCount(N + 1, 2);
+
+    // construct tree
     for (int i = 0; i < V - 1; i++) {
       int a, b;
       cin >> a >> b;
@@ -27,69 +33,82 @@ int main() {
       adj[b].push_back(a);
     }
 
-    // assing colors
+    // assign colors
     for (int c = 1; c <= N; c++) {
       int a, b;
       cin >> a >> b;
       color[a] = c;
       color[b] = c;
+
+      colorMap[c * 2] = a;
+      colorMap[c * 2 + 1] = b;
     }
 
-    // count ammonut of edges node connects to
-    vector<int> degree(2 * N + 1);
-    for (int i = 1; i <= 2 * N; i++) {
+    vector<int> degree(V + 1);
+    for (int i = 1; i <= V; i++) {
       degree[i] = adj[i].size();
     }
 
-    vector<int> colorCount(N + 1, 2);
-    vector<bool> removed(2 * N + 1, false); // flags removed verts
+    vector<bool> removed(V + 1, false);
     int removedCount = 0;
 
-    queue<int> queue;
-    for (int i = 1; i <= 2 * N; i++) {
-      if (degree[i] == 1) {
-        queue.push(i);
+    queue<int> q;
+
+    for (int i = 1; i <= V; i++) {
+      if (degree[i] == 1 && colorCount[color[i]] > 1) {
+        q.push(i);
       }
     }
 
-    while (!queue.empty()) {
-      int ele = queue.front();
-      int nodeColor = color[ele];
-      queue.pop();
+    while (!q.empty()) {
+      int element = q.front();
+      q.pop();
 
       // allready deleted
-      if (removed[ele]) {
+      if (removed[element])
         continue;
-      }
-
-      // can't delete
-      if (colorCount[nodeColor] == 1) {
+      // not a leaf
+      if (degree[element] != 1)
         continue;
-      }
 
-      // remove self
-      colorCount[nodeColor]--;
-      removed[ele] = true;
+      int c = color[element];
+      // second from pair has been allready deleted
+      if (colorCount[c] == 1)
+        continue;
+
+      removed[element] = true;
       removedCount++;
+      colorCount[c]--;
 
-      for (int node : adj[ele]) {
-        degree[node]--;
-        if (!removed[node] && degree[node] == 1) {
-          // schedule for deletion
-          queue.push(node);
+      int other;
+      if (colorMap[c * 2] == element) {
+        other = colorMap[c * 2 + 1];
+      } else {
+        other = colorMap[c * 2];
+      }
+
+      if (!removed[other] && degree[other] == 1) {
+        q.push(other);
+      }
+
+      for (int u : adj[element]) {
+        if (removed[u])
+          continue;
+        degree[u]--;
+        if (degree[u] == 1 && colorCount[color[u]] > 1) {
+          q.push(u);
         }
       }
     }
 
     if (removedCount == N) {
       cout << "TAK\n";
-      for (int i = 1; i <= 2 * N; i++) {
-        cout << (removed[i] ? "0" : "1") << " ";
+      for (int i = 1; i <= V; i++) {
+        cout << (removed[i] ? "0 " : "1 ");
       }
       cout << "\n";
     } else {
       cout << "NIE\n";
     }
-
   }
 }
