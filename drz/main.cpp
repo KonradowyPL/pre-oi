@@ -39,11 +39,11 @@ int main() {
     vector<int> degree(2 * N + 1);
     for (int i = 1; i <= 2 * N; i++) {
       degree[i] = adj[i].size();
-      cout << "edges: " << degree[i] << "\n";
     }
 
     vector<int> colorCount(N + 1, 2);
     vector<bool> removed(2 * N + 1, false); // flags removed verts
+    int removedCount = 0;
 
     queue<int> queue;
     for (int i = 1; i <= 2 * N; i++) {
@@ -57,10 +57,39 @@ int main() {
       int nodeColor = color[ele];
       queue.pop();
 
+      // allready deleted
       if (removed[ele]) {
         continue;
       }
+
+      // can't delete
+      if (colorCount[nodeColor] == 1) {
+        continue;
+      }
+
+      // remove self
+      colorCount[nodeColor]--;
+      removed[ele] = true;
+      removedCount++;
+
+      for (int node : adj[ele]) {
+        degree[node]--;
+        if (!removed[node] && degree[node] == 1) {
+          // schedule for deletion
+          queue.push(node);
+        }
+      }
     }
+
+    if (removedCount == N) {
+      cout << "TAK\n";
+      for (int i = 1; i <= 2 * N; i++) {
+        cout << (removed[i] ? "0" : "1") << " ";
+      }
+      cout << "\n";
+    } else {
+      cout << "NIE\n";
+    }
+
   }
-  return 0;
 }
