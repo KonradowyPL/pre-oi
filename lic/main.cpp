@@ -7,35 +7,50 @@
 // p2 says 3
 
 #include <iostream>
+#include <map>
 #include <vector>
 using namespace std;
 
+const int MOD = 1e9 + 7;
+int n;
+vector<pair<int, int>> valueRanges;
+map<pair<int, int>, int> cache;
+
+int count(int i, int minValue) {
+  if (i == n)
+    return 1; // reached end
+  pair<int, int> key = {i, minValue};
+  if (cache.count(key))
+    return cache[key];
+
+  int a = valueRanges[i].first;
+  int b = valueRanges[i].second;
+  long long res = 0;
+
+  // PASS
+  res += count(i + 1, minValue);
+  res %= MOD;
+
+  // person bids
+  int start = max(a, minValue + 1);
+  for (int x = start; x <= b; x++) {
+    res += count(i + 1, x);
+    res %= MOD;
+  }
+
+  // save to cache for future use
+  cache[key] = res;
+  return res;
+}
+
 int main() {
-  // ios::sync_with_stdio(false);
-  // cin.tie(nullptr);
-
-  long n;
   cin >> n;
-
-  vector<std::pair<long, long>> values(n + 1);
-
+  valueRanges.resize(n);
   for (int i = 0; i < n; i++) {
-    long a, b;
-    cin >> a >> b;
-    values[i] = {a, b};
-    cout << (b - a) << "??\n";
-
-  }
-  long long acc = 0;
-
-  for (int i = 0; i < n; i++) {
-    auto [a, b] = values[i];
-    acc += (b - a + 1); // inclusive
+    cin >> valueRanges[i].first >> valueRanges[i].second;
   }
 
-  // p2 can bid minimum max(curr, selfMin)
-  // p2 can bid maximum min(curr, selfMax)
-  // sum([max(0, max(i, selfMin) - min(selfMax, i)) for i in range(prevMin, prevMax  inslusive)])
-
-  cout << "val " << acc << "\n";
+  int result = (count(0, 0) - 1 + MOD) % MOD;
+  cout << result << endl;
+  return 0;
 }
