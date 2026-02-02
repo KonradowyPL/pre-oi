@@ -8,49 +8,57 @@
 
 #include <iostream>
 #include <map>
+#include <set>
 #include <vector>
 using namespace std;
 
-const int MOD = 1e9 + 7;
-int n;
-vector<pair<int, int>> valueRanges;
-map<pair<int, int>, int> cache;
-
-int count(int i, int minValue) {
-  if (i == n)
-    return 1; // reached end
-  pair<int, int> key = {i, minValue};
-  if (cache.count(key))
-    return cache[key];
-
-  int a = valueRanges[i].first;
-  int b = valueRanges[i].second;
-  long long res = 0;
-
-  // PASS
-  res += count(i + 1, minValue);
-  res %= MOD;
-
-  // person bids
-  int start = max(a, minValue + 1);
-  for (int x = start; x <= b; x++) {
-    res += count(i + 1, x);
-    res %= MOD;
-  }
-
-  // save to cache for future use
-  cache[key] = res;
-  return res;
-}
-
 int main() {
+  int n;
   cin >> n;
-  valueRanges.resize(n);
+
+  vector<long long> segments(n * 2 + 2);
+  vector<std::pair<long long, long long>> valueRanges(n + 1);
+
   for (int i = 0; i < n; i++) {
-    cin >> valueRanges[i].first >> valueRanges[i].second;
+    long a, b;
+    cin >> a >> b;
+    segments[i * 2] = a;
+    segments[i * 2 + 1] = b;
+    valueRanges[i] = {a, b};
+  }
+  std::sort(segments.begin(), segments.end());
+
+  auto it = std::unique(segments.begin(), segments.end());
+  segments.erase(it, segments.end());
+
+  for (int x : segments) {
+    std::cout << x << " ";
+  }
+  cout << "\n";
+
+  int numSegments = segments.size();
+  vector<long long> variations(numSegments + 1);
+
+  for (int p = 0; p < n; p++) {
+    auto [bidMin, bidMax] = valueRanges[p];
+    // step 1:
+
+    // step 2: add 1 for every way someone can reach in their range
+
+    long long segmentStart = 0;
+    for (int i = 1; i < numSegments; i++) {
+      long long segmentEnd = segments[i];
+
+      // can bid:
+      if (segmentStart >= bidMin && segmentEnd <= bidMax) {
+        variations[i] += segmentEnd - segmentStart + 1;
+      }
+      segmentStart = segmentEnd;
+    }
   }
 
-  int result = (count(0, 0) - 1 + MOD) % MOD;
-  cout << result << endl;
-  return 0;
+  for (int x : variations) {
+    std::cout << x << " ";
+  }
+  cout << "\n";
 }
