@@ -7,11 +7,34 @@ using namespace std;
 
 struct Node {
   std::vector<int> connected;
-  int capki;    // statistical amount of capeks on this node
-  int childSum; // amount of children nodes
+  int capki;    // amount of capkis on self
+  int childSum; // sum of capkis on self and children
   int parent;   // index of parent node
-  int original;   // original index of node
 };
+
+void printTree(const std::vector<Node> &tree, int node,
+               const std::string &prefix = "", bool isLast = true) {
+  std::cout << prefix;
+
+  if (tree[node].parent != -1) {
+    std::cout << (isLast ? "└── " : "├── ");
+  }
+
+  std::cout << node << " (capki=" << tree[node].capki
+            << ", sum=" << tree[node].childSum
+            << ", parent=" << tree[node].parent << ")\n";
+
+  std::string newPrefix = prefix;
+  if (tree[node].parent != -1) {
+    newPrefix += (isLast ? "    " : "│   ");
+  }
+
+  for (size_t i = 0; i < tree[node].connected.size(); ++i) {
+    int child = tree[node].connected[i];
+    bool lastChild = (i + 1 == tree[node].connected.size());
+    printTree(tree, child, newPrefix, lastChild);
+  }
+}
 
 int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
   std::vector<Node> tree(n + 1);
@@ -27,7 +50,6 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
     tree[node].capki = 1;
     tree[node].childSum = 1; // 1 since it includes self
     tree[node].parent = parent;
-    tree[node].original = node;
 
     // remove parent
     tree[node].connected.erase(std::remove(tree[node].connected.begin(),
@@ -41,7 +63,7 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
     return tree[node].childSum;
   };
 
-  initTree(initTree, 1, -1);
+  initTree(initTree, 1, 1);
 
   cout << "root has " << tree[1].childSum << "\n";
 
@@ -49,13 +71,15 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
     cout << "child " << child << " has " << tree[child].childSum << "\n";
   }
 
-  while (tree[1].childSum != 1) 
-  {
+  int TREE_ROOT = 1;
 
-    long long total = tree[1].childSum;
+  while (tree[TREE_ROOT].childSum != tree[TREE_ROOT].capki) {
+    printTree(tree, TREE_ROOT);
+
+    long long total = tree[TREE_ROOT].childSum;
 
     long long highestScore = 0;
-    int highestScoreNode = 0;
+    int highestScoreNode = TREE_ROOT;
 
     auto prepareQuestion = [&](auto &&self, int node) -> void {
       if (tree[node].childSum == 0) {
@@ -75,27 +99,60 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
       }
 
       for (auto child : tree[node].connected) {
-        if (child != tree[node].parent) {
-          self(self, child);
-        }
+        self(self, child);
       }
     };
 
-    prepareQuestion(prepareQuestion, 1);
+    prepareQuestion(prepareQuestion, TREE_ROOT);
 
     cout << "highest score " << highestScore << " node: " << highestScoreNode
          << "\n";
+
+    if (highestScoreNode == TREE_ROOT) {
+      break;
+    }
 
     bool succes = zapytaj(highestScoreNode);
     cout << "result: " << succes << "\n";
 
     if (succes) {
       // root node is now that node
-      tree[1] = tree[highestScoreNode];
+      TREE_ROOT = highestScoreNode;
+      cout << "tree root is now " << TREE_ROOT << "\n";
+
     } else {
-        zapytaj(-1);
+      // remove branch
+      long capkis = tree[highestScoreNode].childSum;
+      tree[highestScoreNode].capki = 0;
+      while (highestScoreNode != TREE_ROOT) {
+        tree[highestScoreNode].childSum -= capkis;
+        highestScoreNode = tree[highestScoreNode].parent;
+      }
+      tree[highestScoreNode].childSum -= capkis;
+      cout << "after branch deletion:\n";
+      printTree(tree, TREE_ROOT);
+
+      //   move all capkis to parent
+      auto moveDown = [&](auto &&self, int node) -> void {
+        if (tree[node].childSum == 0) {
+          return;
+        }
+
+        if (node != 1) {
+          tree[tree[node].parent].capki += tree[node].capki;
+          tree[node].childSum -= tree[node].capki;
+          tree[node].capki = 0;
+        }
+
+        for (auto child : tree[node].connected) {
+          self(self, child);
+        }
+      };
+
+      moveDown(moveDown, TREE_ROOT);
     }
   }
 
-  return tree[1].original;
+  cout << "IS IN " << TREE_ROOT << "\n";
+  return TREE_ROOT;
 }
