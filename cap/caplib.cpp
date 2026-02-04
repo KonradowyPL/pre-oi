@@ -63,7 +63,7 @@ int n, query = 0, capek_position = -1;
 }; // namespace __judge
 
 bool zapytaj(int x) {
-  std::cerr << "ZAPYTAJ " << x << std::endl;
+  // std::cerr << "ZAPYTAJ " << x << std::endl;
   if (x < 1 || x > __judge::n)
     __judge::fail("Query value outside of range [1, n]");
   if (++__judge::query > __judge::MAX_QUERIES)
