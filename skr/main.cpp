@@ -25,9 +25,9 @@ int main() {
   std::sort(boxes.begin(), boxes.end(),
             [](auto a, auto b) -> bool { return a.support < b.support; });
 
-  for (int i = 0; i < n; i++) {
-    cout << boxes[i].support << " " << boxes[i].mass << "\n";
-  }
+  // for (int i = 0; i < n; i++) {
+  //   cout << boxes[i].support << " " << boxes[i].mass << "\n";
+  // }
 
   long currMass = 0;
 
@@ -37,9 +37,9 @@ int main() {
     long mass = boxes[i].mass;
     long support = boxes[i].support;
 
-    currMass += mass;
+    
     stack.push_back(boxes[i]);
-    cout << "adding " << i << "\n";
+    // cout << "adding " << i << "\n";
     while (currMass > support) {
       int idx = 0;
       for (int j = 1; j < stack.size(); j++) {
@@ -48,9 +48,11 @@ int main() {
       }
       currMass -= stack[idx].mass;
       stack.erase(stack.begin() + idx);
-      cout << "erasing " << idx << "\n";
+      // cout << "erasing " << idx << "\n";
     }
+    currMass += mass;
+
   }
 
-  cout << "STACK: " << stack.size() << "\n";
+  cout << stack.size() << "\n";
 }
