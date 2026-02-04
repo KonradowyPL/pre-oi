@@ -12,29 +12,29 @@ struct Node {
   int parent;   // index of parent node
 };
 
-void printTree(const std::vector<Node> &tree, int node,
-               const std::string &prefix = "", bool isLast = true) {
-  std::cout << prefix;
+// void printTree(const std::vector<Node> &tree, int node,
+//                const std::string &prefix = "", bool isLast = true) {
+//   std::cout << prefix;
 
-  if (tree[node].parent != -1) {
-    std::cout << (isLast ? "└── " : "├── ");
-  }
+//   if (tree[node].parent != -1) {
+//     std::cout << (isLast ? "└── " : "├── ");
+//   }
 
-  std::cout << node << " (capki=" << tree[node].capki
-            << ", sum=" << tree[node].childSum
-            << ", parent=" << tree[node].parent << ")\n";
+//   std::cout << node << " (capki=" << tree[node].capki
+//             << ", sum=" << tree[node].childSum
+//             << ", parent=" << tree[node].parent << ")\n";
 
-  std::string newPrefix = prefix;
-  if (tree[node].parent != -1) {
-    newPrefix += (isLast ? "    " : "│   ");
-  }
+//   std::string newPrefix = prefix;
+//   if (tree[node].parent != -1) {
+//     newPrefix += (isLast ? "    " : "│   ");
+//   }
 
-  for (size_t i = 0; i < tree[node].connected.size(); ++i) {
-    int child = tree[node].connected[i];
-    bool lastChild = (i + 1 == tree[node].connected.size());
-    printTree(tree, child, newPrefix, lastChild);
-  }
-}
+//   for (size_t i = 0; i < tree[node].connected.size(); ++i) {
+//     int child = tree[node].connected[i];
+//     bool lastChild = (i + 1 == tree[node].connected.size());
+//     printTree(tree, child, newPrefix, lastChild);
+//   }
+// }
 
 int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
   std::vector<Node> tree(n + 1);
@@ -65,16 +65,11 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
 
   initTree(initTree, 1, 1);
 
-  cout << "root has " << tree[1].childSum << "\n";
-
-  for (auto child : tree[1].connected) {
-    cout << "child " << child << " has " << tree[child].childSum << "\n";
-  }
 
   int TREE_ROOT = 1;
 
   while (tree[TREE_ROOT].childSum != tree[TREE_ROOT].capki) {
-    printTree(tree, TREE_ROOT);
+    // printTree(tree, TREE_ROOT);
 
     long long total = tree[TREE_ROOT].childSum;
 
@@ -105,20 +100,21 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
 
     prepareQuestion(prepareQuestion, TREE_ROOT);
 
-    cout << "highest score " << highestScore << " node: " << highestScoreNode
-         << "\n";
+    // cout << "highest score " << highestScore << " node: " << highestScoreNode << "\n";
 
     if (highestScoreNode == TREE_ROOT) {
       break;
     }
 
     bool succes = zapytaj(highestScoreNode);
-    cout << "result: " << succes << "\n";
+    // cout << "result: " << succes << "\n";
 
     if (succes) {
       // root node is now that node
       TREE_ROOT = highestScoreNode;
-      cout << "tree root is now " << TREE_ROOT << "\n";
+    //   cout << "tree root is now " << TREE_ROOT << "\n";
+      tree[tree[TREE_ROOT].parent].capki = 0;
+      tree[tree[TREE_ROOT].parent].childSum = tree[TREE_ROOT].childSum;
 
     } else {
       // remove branch
@@ -129,8 +125,8 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
         highestScoreNode = tree[highestScoreNode].parent;
       }
       tree[highestScoreNode].childSum -= capkis;
-      cout << "after branch deletion:\n";
-      printTree(tree, TREE_ROOT);
+    //   cout << "after branch deletion:\n";
+    //   printTree(tree, TREE_ROOT);
 
       //   move all capkis to parent
       auto moveDown = [&](auto &&self, int node) -> void {
@@ -150,9 +146,22 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
       };
 
       moveDown(moveDown, TREE_ROOT);
+
+      
+      // move tree root 1 down
+      for (auto child : tree[tree[TREE_ROOT].parent].connected) {
+        if (child != TREE_ROOT) {
+            tree[child].capki = 0;
+            tree[child].childSum = 0;
+        }
+      }
+
+      TREE_ROOT = tree[TREE_ROOT].parent;
+    //   cout << "tree root is now " << TREE_ROOT << "\n";
+
     }
   }
 
-  cout << "IS IN " << TREE_ROOT << "\n";
+//   cout << "IS IN " << TREE_ROOT << "\n";
   return TREE_ROOT;
 }
