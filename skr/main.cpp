@@ -1,4 +1,5 @@
 #include <cassert>
+#include <climits>
 #include <iostream>
 #include <queue>
 #include <set>
@@ -9,8 +10,6 @@ using namespace std;
 struct Box {
   long mass;
   long support; // AKA: wytrzymałość
-
-  bool operator<(const Box &b) const { return mass < b.mass; }
 };
 
 int main() {
@@ -20,28 +19,29 @@ int main() {
   vector<Box> boxes(n);
 
   for (int i = 0; i < n; i++) {
-    long m, w;
-    cin >> w >> m;
-    boxes[i] = {m, w};
+    long mass, support;
+    cin >> support >> mass;
+    boxes[i] = {mass, support};
   }
 
-  std::sort(boxes.begin(), boxes.end(),
-            [](auto a, auto b) -> bool { return a.support < b.support; });
+  std::sort(boxes.begin(), boxes.end(), [](auto a, auto b) -> bool {
+    return a.mass + a.support < b.mass + b.support;
+  });
 
-  long currMass = 0;
-  priority_queue<Box, vector<Box>> queue;
+  vector<long> dp(n + 1, LONG_MAX);
+  dp[0] = 0;
+  long maxH = 0;
 
   for (int i = 0; i < n; i++) {
     auto [mass, support] = boxes[i];
+    // cout << a.mass + a.support << "\n";
 
-    queue.push(boxes[i]);
-    while (currMass > support) {
-      auto box = queue.top();
-      currMass -= box.mass;
-      queue.pop();
+    for (long h = maxH; h >= 0; h--) {
+      if (dp[h] <= support) {
+        dp[h + 1] = min(dp[h + 1], dp[h] + mass);
+        maxH = max(maxH, h + 1);
+      }
     }
-    currMass += mass;
   }
-
-  cout << queue.size() << "\n";
+  cout << maxH << "\n";
 }
