@@ -32,8 +32,7 @@ int main() {
   priority_queue<Box, vector<Box>> queue;
 
   for (int i = 0; i < n; i++) {
-    long mass = boxes[i].mass;
-    long support = boxes[i].support;
+    auto [mass, support] = boxes[i];
 
     queue.push(boxes[i]);
     while (currMass > support) {
