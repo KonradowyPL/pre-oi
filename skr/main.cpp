@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <queue>
 #include <set>
 #include <tuple>
 #include <vector>
@@ -8,6 +9,8 @@ using namespace std;
 struct Box {
   long mass;
   long support; // AKA: wytrzymałość
+
+  bool operator<(const Box &b) const { return mass < b.mass; }
 };
 
 int main() {
@@ -25,34 +28,21 @@ int main() {
   std::sort(boxes.begin(), boxes.end(),
             [](auto a, auto b) -> bool { return a.support < b.support; });
 
-  // for (int i = 0; i < n; i++) {
-  //   cout << boxes[i].support << " " << boxes[i].mass << "\n";
-  // }
-
   long currMass = 0;
-
-  vector<Box> stack;
+  priority_queue<Box, vector<Box>> queue;
 
   for (int i = 0; i < n; i++) {
     long mass = boxes[i].mass;
     long support = boxes[i].support;
 
-    
-    stack.push_back(boxes[i]);
-    // cout << "adding " << i << "\n";
+    queue.push(boxes[i]);
     while (currMass > support) {
-      int idx = 0;
-      for (int j = 1; j < stack.size(); j++) {
-        if (stack[j].mass > stack[idx].mass)
-          idx = j;
-      }
-      currMass -= stack[idx].mass;
-      stack.erase(stack.begin() + idx);
-      // cout << "erasing " << idx << "\n";
+      auto box = queue.top();
+      currMass -= box.mass;
+      queue.pop();
     }
     currMass += mass;
-
   }
 
-  cout << stack.size() << "\n";
+  cout << queue.size() << "\n";
 }
