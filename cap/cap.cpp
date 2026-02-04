@@ -40,7 +40,7 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
   std::vector<Node> tree(n + 1);
 
   // construct tree
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < n - 1; i++) {
     auto [a, b] = gałęzie[i];
     tree[a].connected.push_back(b);
     tree[b].connected.push_back(a);
@@ -63,7 +63,7 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
     return tree[node].childSum;
   };
 
-  initTree(initTree, 1, 1);
+  initTree(initTree, 1, 0);
 
   int TREE_ROOT = 1;
 
@@ -72,11 +72,11 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
 
     long long total = tree[TREE_ROOT].childSum;
 
-    long long highestScore = 0;
+    long long highestScore = -1;
     int highestScoreNode = TREE_ROOT;
 
     auto prepareQuestion = [&](auto &&self, int node) -> void {
-      if (tree[node].childSum == 0) {
+      if (tree[node].childSum <= 0) {
         return;
       }
 
@@ -103,7 +103,7 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
     // << "\n";
 
     if (highestScoreNode == TREE_ROOT) {
-      break;
+      break; // possibly infinite loop
     }
 
     bool succes = zapytaj(highestScoreNode);
@@ -113,24 +113,27 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
       // root node is now that node
       TREE_ROOT = highestScoreNode;
       //   cout << "tree root is now " << TREE_ROOT << "\n";
-      tree[tree[TREE_ROOT].parent].capki = 0;
-      tree[tree[TREE_ROOT].parent].childSum = tree[TREE_ROOT].childSum;
-
     } else {
       // remove branch
+
       long capkis = tree[highestScoreNode].childSum;
       tree[highestScoreNode].capki = 0;
-      while (highestScoreNode != TREE_ROOT) {
+      
+      while (highestScoreNode != TREE_ROOT && highestScoreNode) {
         tree[highestScoreNode].childSum -= capkis;
         highestScoreNode = tree[highestScoreNode].parent;
       }
+
       tree[highestScoreNode].childSum -= capkis;
+
+      tree[tree[TREE_ROOT].parent].capki = 0;
+      tree[tree[TREE_ROOT].parent].childSum = tree[TREE_ROOT].childSum;
       //   cout << "after branch deletion:\n";
       //   printTree(tree, TREE_ROOT);
 
       //   move all capkis to parent
       auto moveDown = [&](auto &&self, int node) -> void {
-        if (tree[node].childSum == 0) {
+        if (tree[node].childSum <= 0) {
           return;
         }
 
@@ -147,15 +150,21 @@ int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
 
       moveDown(moveDown, TREE_ROOT);
 
-      // move tree root 1 down
-      for (auto child : tree[tree[TREE_ROOT].parent].connected) {
+
+
+      int newRoot = tree[TREE_ROOT].parent;
+      if (newRoot == 0) {
+        continue;
+      }
+      for (auto child : tree[newRoot].connected) {
         if (child != TREE_ROOT) {
           tree[child].capki = 0;
           tree[child].childSum = 0;
         }
       }
 
-      TREE_ROOT = tree[TREE_ROOT].parent;
+      // move tree root 1 down
+      TREE_ROOT = newRoot;
       //   cout << "tree root is now " << TREE_ROOT << "\n";
     }
   }
