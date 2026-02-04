@@ -8,97 +8,115 @@
 
 #include <cassert>
 #include <iostream>
-#include <map>
 #include <set>
 #include <vector>
 using namespace std;
+using namespace std;
+
+long long mod_inverse(long long a, long long m) {
+  long long m0 = m, u = 1, v = 0;
+  while (a > 1) {
+    long long t = a / m;
+    a -= t * m;
+    std::swap(a, m);
+    u -= t * v;
+    std::swap(u, v);
+  }
+  if (u < 0)
+    u += m0;
+  return u;
+}
+
+static const long long MOD = 1000000007;
+
+long long modPow(long long a, long long e) {
+  long long r = 1;
+  while (e) {
+    if (e & 1)
+      r = r * a % MOD;
+    a = a * a % MOD;
+    e >>= 1;
+  }
+  return r;
+}
+
+long long inv(long long x) { return modPow(x, MOD - 2); }
 
 int main() {
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
+
   int n;
   cin >> n;
 
-  vector<long long> segments(n * 2 + 2);
-  vector<std::pair<long long, long long>> valueRanges(n + 1);
+  vector<pair<long long, long long>> a(n + 1);
+  vector<long long> S;
 
-  for (int i = 0; i < n; i++) {
-    long a, b;
-    cin >> a >> b;
-    segments[i * 2] = a;
-    segments[i * 2 + 1] = b + 1; // inclusive
-    valueRanges[i] = {a, b};
+  for (int i = 1; i <= n; i++) {
+    cin >> a[i].first >> a[i].second;
+    S.push_back(a[i].first);
+    S.push_back(a[i].second + 1);
   }
-  std::sort(segments.begin(), segments.end());
 
-  auto it = std::unique(segments.begin(), segments.end());
-  segments.erase(it, segments.end());
+  sort(S.begin(), S.end());
+  S.erase(unique(S.begin(), S.end()), S.end());
 
-  for (int x : segments) {
-    std::cout << x << " ";
+  int m = (int)S.size() - 1; // liczba kubełków
+  vector<long long> L(m);
+  for (int i = 0; i < m; i++) {
+    L[i] = S[i + 1] - S[i];
   }
-  cout << "\n";
 
-  int numSegments = segments.size();
+  // D[k][i]  – do i-tego kubełka włącznie
+  // Dp[k][i] – dokładnie w i-tym kubełku
+  vector<vector<long long>> D(n + 1, vector<long long>(m, 0));
+  vector<vector<long long>> Dp(n + 1, vector<long long>(m, 0));
 
-  
-  vector<long long> variations(numSegments + 1);
+  // baza: 0 osób → dokładnie 1 pusty przebieg
+  for (int i = 0; i < m; i++)
+    D[0][i] = 1;
 
-  for (int p = 0; p < n; p++) {
-    cout << "starting bider " << p << "\n";
-    auto [bidMin, bidMax] = valueRanges[p];
-    // step 1: add on top of previous bidders
-    long long segmentStart = 0;
-    for (int i = 1; i < numSegments; i++) {
-      long long segmentEnd = segments[i];
-      // can bid:
-      if (segmentStart >= bidMin && segmentEnd <= bidMax) {
-        long long previousSegmentStart = 0;
-        for (int j = 1; j <= i; j++) {
-          long long previousSegmentEnd = segments[j];
+  for (int k = 1; k <= n; k++) {
+    for (int i = 0; i < m; i++) {
 
-          if (i == j) {
-            // overlapping segment
-            long long segmentLen = segmentEnd - segmentStart;
-            long long value = (segmentLen - 1) * segmentLen / 2;
-            variations[i] *= max(value, (long long)1);
-            cout << "overlapping segment: " << i << " len " << segmentLen
-                 << " mult: " << value << " got: " << variations[i] << "\n";
-          } else {
-            // calculate
-            variations[i] *= max(variations[j], (long long)1);
-            cout << "multiplying by: " << variations[j] << "\n";
+      long long w = 1; // W(L[i], 0)
+      int r = 0;
+
+      // cofamy się po j
+      for (int j = k; j >= 1; j--) {
+
+        // POPRAWNY WARUNEK: część wspólna przedziałów
+        if (a[j].first < S[i + 1] && a[j].second >= S[i]) {
+
+          r++;
+          if (r > 1) {
+            // W(L, r) = W(L, r-1) * (L + r - 1) / r
+            w = w * (L[i] + r - 1) % MOD * inv(r) % MOD;
           }
 
-          previousSegmentStart = previousSegmentEnd;
+          long long prev;
+          if (j == 1) {
+            prev = 1;
+          } else if (i == 0) {
+            prev = 1;
+          } else {
+            prev = D[j - 1][i - 1];
+          }
+
+          Dp[k][i] = (Dp[k][i] + prev * w) % MOD;
         }
       }
-      segmentStart = segmentEnd;
-    }
 
-    // step 2: add 1 for every way someone can reach in their range
-    // this assumes this person will be the first to bid
-    segmentStart = 0;
-    for (int i = 1; i < numSegments; i++) {
-      long long segmentEnd = segments[i];
-
-      // can bid:
-      if (segmentStart >= bidMin && segmentEnd <= bidMax + 1) {
-        variations[i - 1] += segmentEnd - segmentStart;
-        cout << "adding: " << segmentEnd - segmentStart << "\n";
+      D[k][i] = Dp[k][i];
+      if (i > 0) {
+        D[k][i] = (D[k][i] + D[k][i - 1]) % MOD;
       }
-      segmentStart = segmentEnd;
     }
+  }
 
-    cout << "arr: ";
-    for (int x : variations) {
-      std::cout << x << " ";
-    }
-    cout << "\n";
-  }
-  long long acc;
-  for (int x : variations) {
-    std::cout << x << " ";
-    acc += x;
-  }
-  cout << "\n";
-  cout << "acc " << acc << "\n";
+  // odejmujemy pustą licytację
+  long long ans = (D[n][m - 1] - 1 + MOD) % MOD;
+  cout << ans << "\n";
+
+  return 0;
 }
