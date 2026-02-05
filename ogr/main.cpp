@@ -67,14 +67,17 @@ int main() {
   long seasonLen = 0;
 
   for (int i = 0; i < days; i++) {
+    // season calculation
     if (seasonType != sequence[i]) {
-      ll num = factorial(seasonLen);
-      ll den = factorial(seasonLen - seasonBusyDays);
+      if (seasonBusyDays != 0) {
+        ll num = factorial(seasonLen);
+        ll den = factorial(seasonLen - seasonBusyDays);
 
-      ll combinations = num * modInverse(den) % MOD;
+        ll combinations = num * modInverse(den) % MOD;
 
-      totalCombinations *= combinations;
-      totalCombinations %= MOD;
+        totalCombinations *= combinations;
+        totalCombinations %= MOD;
+      }
 
       // reset
       seasonBusyDays = 0;
