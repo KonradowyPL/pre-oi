@@ -1,8 +1,22 @@
 #include <cassert>
 #include <iostream>
-#include <vector>
 #include <set>
+#include <vector>
 using namespace std;
+
+#define ll long long
+#define MOD 1'000'000'007
+
+unsigned ll factorial(int n) {
+  if (n < 0)
+    return 0; // Factorial not defined for negative numbers
+  unsigned ll fact = 1;
+  for (int i = 1; i <= n; ++i) {
+    fact *= i;
+    fact %= MOD;
+  }
+  return fact;
+}
 
 int main() {
   long trees, days;
@@ -22,45 +36,69 @@ int main() {
       remainingHotDays++;
     }
   }
+  // set of trees containing money
+  set<long> with;
+  // set of trees without money
+  set<long> without;
 
-  set<long> treeState;
+  for (long j = 0; j < trees + 1; j++) {
+    without.insert(j);
+  }
+
   long coins = 0;
+  unsigned ll totalCombinations = 1;
+
+  // current season
+  char seasonType = 'x';
+  long seasonBusyDays = 0;
+  long seasonLen = 0;
 
   for (int i = 0; i < days; i++) {
-    // cout << "day " << i << " " << sequence[i] << "\n";
+    if (seasonType != sequence[i]) {
+      auto combinations =
+          factorial(seasonLen) / factorial(seasonLen - seasonBusyDays);
 
-    if(sequence[i] == 'Z') {
+      totalCombinations *= combinations;
+      totalCombinations %= MOD;
+
+      // reset
+      seasonBusyDays = 0;
+      seasonLen = 0;
+      seasonType = sequence[i];
+    }
+
+    if (sequence[i] == 'Z') {
       // dzien zimny mozna zbierac
-      if (treeState.size() > 0) {
-        auto largest = *treeState.rbegin();
-        // cout << "collecting " << largest << "\n";
+      if (with.size() > 0) {
+        auto largest = *with.rbegin();
         coins += largest;
-        treeState.erase(largest);
-      } else {
-        // cout << "doing nothing\n";
+        with.erase(largest);
+        without.insert(largest);
+        seasonBusyDays++;
       }
-      remainingColdDays--; 
+      remainingColdDays--;
+      seasonLen++;
     } else {
       // dzien cieply mozna podlewac
       if (remainingColdDays >= remainingHotDays) {
         // find largest tree
-        int j = trees;
-        for (; j > 0; j--) {
-          if (!treeState.contains(j)) {
-            break;
-          }
-        }
-        treeState.insert(j);
-        // cout << "can water " << j << "\n";
-      } else {
-        // cout << "doing nothing\n";
-
+        auto largest = *without.rbegin();
+        with.insert(largest);
+        without.erase(largest);
+        seasonBusyDays++;
       }
-      remainingHotDays--; 
-
+      remainingHotDays--;
+      seasonLen++;
     }
-
   }
-  cout << coins << " -1\n";
 
+  
+  // end season
+  auto combinations =
+      factorial(seasonLen) / factorial(seasonLen - seasonBusyDays);
+
+  totalCombinations *= combinations;
+  totalCombinations %= MOD;
+
+  cout << coins << " " << totalCombinations << "\n";
 }
