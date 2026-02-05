@@ -1,3 +1,4 @@
+// TO NIE MA PRAWA DZIAŁAĆ
 #include <algorithm>
 #include <cassert>
 #include <climits>
@@ -23,12 +24,15 @@ int main() {
   // instnieje MAXSYMALNIE JEDNA
   // liczba mniejsza o większym indexie
 
-  for (int i = 0; i < n + 1; i++) {
-    cout << i <<" has index " << indexes[i] << "\n";
-  }
-  cout << "\n";
+  // for (int i = 0; i < n + 1; i++) {
+  //   cout << i <<" has index " << indexes[i] << "\n";
+  // }
+  // cout << "\n";
 
-  for (long value = 1; value < n + 1; value++) {
+  long totalDist = 0;
+
+  // for (long value = 1; value < n + 1; value++) {
+  for (long value = n; value > 0; value--) {
     long selfIndex = indexes[value];
 
     vector<long> filteredIndexes;
@@ -45,14 +49,15 @@ int main() {
 
       long secondLargest = filteredIndexes[filteredIndexes.size() - 2];
 
-      cout << "computed value " << value << "\n";
-      cout << "second larges index " << secondLargest << "\n";
-      cout << "moving from " << selfIndex << " to " << secondLargest << "\n";
+      // cout << "computed value " << value << "\n";
+      // cout << "second larges index " << secondLargest << "\n";
+      // cout << "moving from " << selfIndex << " to " << secondLargest << "\n";
 
-      cout << "diff: " << secondLargest - selfIndex << "\n";
+      // cout << "diff: " << secondLargest - selfIndex << "\n";
+      totalDist += secondLargest - selfIndex;
       // accually move element:
 
-      for (long j = 1; j < n + 1; j++) {
+      for (long j = 1; j < value + 1; j++) {
         long secondIndex = indexes[j];
         if (secondIndex >= selfIndex && secondIndex <= secondLargest) {
           indexes[j]--;
@@ -61,10 +66,11 @@ int main() {
       }
 
 
-      for (int i = 0; i < n + 1; i++) {
-        cout << i <<" has index " << indexes[i] << "\n";
-      }
-      cout << "\n";
+      // for (int i = 0; i < n + 1; i++) {
+      //   cout << i <<" has index " << indexes[i] << "\n";
+      // }
+      // cout << "\n";
     }
   }
+  cout << totalDist;
 }
