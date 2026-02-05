@@ -54,7 +54,7 @@ int main() {
   // set of trees without money
   set<long> without;
 
-  for (long j = 0; j < trees + 1; j++) {
+  for (long j = 1; j < trees + 1; j++) {
     without.insert(j);
   }
 
@@ -98,7 +98,8 @@ int main() {
       seasonLen++;
     } else {
       // dzien cieply mozna podlewac
-      if (remainingColdDays >= remainingHotDays && without.size() > 0) {
+
+      if (without.size() > 0) {
         // find largest tree
         auto largest = *without.rbegin();
         with.insert(largest);
@@ -111,8 +112,9 @@ int main() {
   }
 
   // end season
-  auto combinations =
-      factorial(seasonLen) / factorial(seasonLen - seasonBusyDays);
+  ll num = factorial(seasonLen);
+  ll den = factorial(seasonLen - seasonBusyDays);
+  ll combinations = num * modInverse(den) % MOD;
 
   totalCombinations *= combinations;
   totalCombinations %= MOD;
