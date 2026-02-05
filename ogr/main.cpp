@@ -18,6 +18,19 @@ unsigned ll factorial(int n) {
   return fact;
 }
 
+ll modPow(ll base, ll exp) {
+  ll result = 1;
+  while (exp) {
+    if (exp & 1)
+      result = result * base % MOD;
+    base = base * base % MOD;
+    exp >>= 1;
+  }
+  return result;
+}
+
+ll modInverse(ll x) { return modPow(x, MOD - 2); }
+
 int main() {
   long trees, days;
   cin >> trees >> days;
@@ -55,8 +68,10 @@ int main() {
 
   for (int i = 0; i < days; i++) {
     if (seasonType != sequence[i]) {
-      auto combinations =
-          factorial(seasonLen) / factorial(seasonLen - seasonBusyDays);
+      ll num = factorial(seasonLen);
+      ll den = factorial(seasonLen - seasonBusyDays);
+
+      ll combinations = num * modInverse(den) % MOD;
 
       totalCombinations *= combinations;
       totalCombinations %= MOD;
@@ -80,7 +95,7 @@ int main() {
       seasonLen++;
     } else {
       // dzien cieply mozna podlewac
-      if (remainingColdDays >= remainingHotDays) {
+      if (remainingColdDays >= remainingHotDays && without.size() > 0) {
         // find largest tree
         auto largest = *without.rbegin();
         with.insert(largest);
@@ -92,7 +107,6 @@ int main() {
     }
   }
 
-  
   // end season
   auto combinations =
       factorial(seasonLen) / factorial(seasonLen - seasonBusyDays);
