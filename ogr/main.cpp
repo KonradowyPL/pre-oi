@@ -7,30 +7,6 @@ using namespace std;
 #define ll long long
 #define MOD 1'000'000'007
 
-unsigned ll factorial(int n) {
-  if (n < 0)
-    return 0; // Factorial not defined for negative numbers
-  unsigned ll fact = 1;
-  for (int i = 1; i <= n; ++i) {
-    fact *= i;
-    fact %= MOD;
-  }
-  return fact;
-}
-
-ll modPow(ll base, ll exp) {
-  ll result = 1;
-  while (exp) {
-    if (exp & 1)
-      result = result * base % MOD;
-    base = base * base % MOD;
-    exp >>= 1;
-  }
-  return result;
-}
-
-ll modInverse(ll x) { return modPow(x, MOD - 2); }
-
 int main() {
   long trees, days;
   cin >> trees >> days;
@@ -59,24 +35,23 @@ int main() {
   }
 
   long coins = 0;
-  unsigned ll totalCombinations = 1;
 
   // current season
   char seasonType = 'x';
   long seasonBusyDays = 0;
   long seasonLen = 0;
 
+  long currentSeason = 0;
+
+  vector<long> treeWatered(trees + 1, 0);
+  vector<std::pair<long, long>> seasons;
+
   for (int i = 0; i < days; i++) {
     // season calculation
     if (seasonType != sequence[i]) {
       if (seasonBusyDays != 0) {
-        ll num = factorial(seasonLen);
-        ll den = factorial(seasonLen - seasonBusyDays);
-
-        ll combinations = num * modInverse(den) % MOD;
-
-        totalCombinations *= combinations;
-        totalCombinations %= MOD;
+        seasons.push_back({seasonLen, seasonBusyDays});
+        currentSeason++;
       }
 
       // reset
@@ -105,19 +80,29 @@ int main() {
         with.insert(largest);
         without.erase(largest);
         seasonBusyDays++;
+        treeWatered[largest] = currentSeason;
       }
       remainingHotDays--;
       seasonLen++;
     }
   }
 
-  // end season
-  ll num = factorial(seasonLen);
-  ll den = factorial(seasonLen - seasonBusyDays);
-  ll combinations = num * modInverse(den) % MOD;
+  seasons.push_back({seasonLen, seasonBusyDays});
 
-  totalCombinations *= combinations;
-  totalCombinations %= MOD;
+  // revert all non-collected trees
+  for (auto tree : with) {
+    auto season = treeWatered[tree];
+    seasons[season].second--;
+  }
+  unsigned ll totalCombinations = 1;
+
+  for (auto season : seasons) {
+    auto [seasonLen, seasonBusyDays] = season;
+
+    for (long long i = 0; i < seasonBusyDays; i++) {
+      totalCombinations = totalCombinations * (seasonLen - i) % MOD;
+    }
+  }
 
   cout << coins << " " << totalCombinations << "\n";
 }
