@@ -35,7 +35,7 @@ int main() {
     // clear acc
     if (spice != currSpice) {
       segments.push_back({maxScore, currSpice});
-      maxScore = 0;
+      maxScore = LONG_MIN;
       currSpice = spice;
     }
 
@@ -44,35 +44,41 @@ int main() {
   segments.push_back({maxScore, currSpice});
   segments.push_back({0, LONG_MAX});
 
-  long acc = 0;
+  vector<std::pair<long, long>> newSegments;
+  newSegments.push_back({0, LONG_MAX});
 
   for (int i = 1; i < segments.size() - 1; i++) {
     auto [score, spice] = segments[i];
 
-    // cout << "se " << score << " " << spice << "\n";
-
     if (score >= 0) {
-      acc += score;
+      if (newSegments[newSegments.size() - 1].second == spice) {
+
+        newSegments[newSegments.size() - 1].first =
+            max(newSegments[newSegments.size() - 1].first, score);
+
+      } else {
+        newSegments.push_back({score, spice});
+        // cerr << "adding " << score << " " << spice << "\n";
+      }
     } else {
-      // negative score
-      // if previous has the same spice as next
-      if (segments[i - 1].second == segments[i + 1].second) {
-        // and it is worth adding both
-        if ((segments[i - 1].first + segments[i + 1].first + score) >
-            max(segments[i - 1].first, segments[i + 1].first)) {
-          acc += score;
-        } else {
-          // it is worth adding only one
-          if ((segments[i - 1].first < segments[i + 1].first)) {
-            // previous was larger, skip next one
-            i++;
-          } else {
-            // next is larger, undo previous
-            acc -= segments[i - 1].first;
-          }
+      auto next = segments[i + 1];
+      auto prev = segments[i - 1];
+
+      if (next.second == prev.second) {
+        // check if it is optimal to add negative
+
+        if (next.first + prev.first + score > max(next.first, prev.first)) {
+          // yes
+          newSegments.push_back({score, spice});
         }
       }
     }
+  }
+
+  long acc = 0;
+
+  for (auto seg : newSegments) {
+    acc += seg.first;
   }
 
   cout << acc << "\n";
