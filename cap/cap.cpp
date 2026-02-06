@@ -5,7 +5,7 @@
 
 using namespace std;
 
-struct Node {
+struct Zamek {
   std::vector<int> connected;
   int capki;    // amount of capkis on self
   int childSum; // sum of capkis on self and children
@@ -37,7 +37,7 @@ struct Node {
 // }
 
 int znajdz_capka(int n, std::vector<std::pair<int, int>> gałęzie) {
-  std::vector<Node> tree(n + 1);
+  std::vector<Zamek> tree(n + 1);
 
   // construct tree
   for (int i = 0; i < n - 1; i++) {
