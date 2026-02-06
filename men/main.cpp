@@ -12,73 +12,86 @@ int main() {
   long maxSpice;
   cin >> maxSpice;
 
-  vector<std::pair<long, long>> data(n);
+  // vector<std::pair<long, long>> data(n);
+  int bufferIndex = 0;
+  vector<std::pair<long, long>> buffer(10, {0, LONG_MAX});
+  // SCORE , SPICE
 
-  for (int i = 0; i < n; i++) {
-    long spice, score;
-    cin >> spice >> score;
-    data[i] = {spice, score};
-  }
+  long acc = 0;
 
   long maxScore = 0;
   long currSpice = LONG_MAX;
 
-  vector<std::pair<long, long>> segments;
-
   for (int i = 0; i < n; i++) {
-    auto [spice, score] = data[i];
+    long spice, score;
+    cin >> spice >> score;
 
-    if (spice > maxSpice) {
-      continue; // remove to spicy dishes
-    }
+    if (spice > maxSpice)
+      continue;
 
-    // clear acc
     if (spice != currSpice) {
-      segments.push_back({maxScore, currSpice});
-      maxScore = LONG_MIN;
-      currSpice = spice;
-    }
 
-    maxScore = max(maxScore, score);
-  }
-  segments.push_back({maxScore, currSpice});
-  segments.push_back({0, LONG_MAX});
+      auto prev = buffer[(bufferIndex - 1) % 10];
+      auto prevPrev = buffer[(bufferIndex - 2) % 10];
+      // check if previous was negative && prevprev is not same as curr spice
+      if (prev.first < 0 && prevPrev.second != currSpice) {
+        // undo that negative
 
-  vector<std::pair<long, long>> newSegments;
-  newSegments.push_back({0, LONG_MAX});
+        acc -= prev.first;
+        bufferIndex--;
+      }
 
-  for (int i = 1; i < segments.size() - 1; i++) {
-    auto [score, spice] = segments[i];
+      // check if previous was negative and 1 further was the same
+      // and we are loosing score by keeping negative
+      if (prev.first < 0 && prevPrev.second == currSpice &&
+          (prev.first + prevPrev.first + maxScore <
+           max(prevPrev.first, maxScore))) {
 
-    if (score >= 0) {
-      if (newSegments[newSegments.size() - 1].second == spice) {
-
-        newSegments[newSegments.size() - 1].first =
-            max(newSegments[newSegments.size() - 1].first, score);
+        // undo negative
+        acc -= prev.first;
+        bufferIndex--;
+        // add gained score
+        acc += max(prevPrev.first, maxScore) - prevPrev.first;
 
       } else {
-        newSegments.push_back({score, spice});
-        // cerr << "adding " << score << " " << spice << "\n";
+        buffer[(bufferIndex++) % 10] = {maxScore, currSpice};
+        acc += maxScore;
       }
+
+      maxScore = score;
+      currSpice = spice;
     } else {
-      auto next = segments[i + 1];
-      auto prev = segments[i - 1];
-
-      if (next.second == prev.second) {
-        // check if it is optimal to add negative
-
-        if (next.first + prev.first + score > max(next.first, prev.first)) {
-          // yes
-          newSegments.push_back({score, spice});
-        }
-      }
+      maxScore = max(score, maxScore);
     }
   }
 
-  long acc = 0;
+  auto prev = buffer[(bufferIndex - 1) % 10];
+  auto prevPrev = buffer[(bufferIndex - 2) % 10];
+  // check if previous was negative && prevprev is not same as curr spice
+  if (prev.first < 0 && prevPrev.second != currSpice) {
+    // undo that negative
 
-  for (auto seg : newSegments) {
-    acc += seg.first;
+    acc -= prev.first;
+    bufferIndex--;
+  }
+
+  // check if previous was negative and 1 further was the same
+  // and we are loosing score by keeping negative
+  if (prev.first < 0 && prevPrev.second == currSpice &&
+      (prev.first + prevPrev.first + maxScore <
+       max(prevPrev.first, maxScore))) {
+
+    // undo negative
+    acc -= prev.first;
+    bufferIndex--;
+    // add gained score
+    acc += max(prevPrev.first, maxScore) - prevPrev.first;
+
+  } else {
+    buffer[(bufferIndex++) % 10] = {maxScore, currSpice};
+
+    // do not count last if negative
+    acc += max(0L, maxScore);
   }
 
   cout << acc << "\n";
