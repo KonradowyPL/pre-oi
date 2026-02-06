@@ -26,6 +26,7 @@ int main() {
     cin >> N;
 
     vector<Zamek> zamki(N + 1);
+    vector<long long> leaves;
 
     long S = 0;
 
@@ -41,29 +42,34 @@ int main() {
       zamki[node].parent = parent;
       zamki[node].depth = depth;
 
+      bool isLeaf = true;
+
       for (auto road : zamki[node].connected) {
         if (road.dist != parent) {
           self(self, road.dist, node, depth + road.len);
+          isLeaf = false;
         }
       }
+      if (isLeaf)
+        leaves.push_back(depth);
     };
     initTree(initTree, 1, -1, 0);
 
-    // sort leaves by depth (this obviously breaks ordering, but who cares)
-    std::sort(zamki.begin(), zamki.end(),
-              [](auto a, auto b) -> bool { return a.depth > b.depth; });
+    // sort leaves by depth
+    sort(leaves.begin(), leaves.end(), greater<>());
 
     for (auto z : zamki) {
       cout << z.depth << "\n";
     }
     cout << "\n";
 
-    vector<long> prefixes(N + 1, 0);
+    vector<long> prefixes(leaves.size() + 1, 0);
 
     // prefixes[0] will allways be 0!
-    for (int i = 1; i < N + 1; i++) {
-      prefixes[i] = prefixes[i - 1] + zamki[i - 1].depth;
+    for (int i = 1; i <= leaves.size(); i++) {
+      prefixes[i] = prefixes[i - 1] + leaves[i - 1];
     }
+
     for (auto z : prefixes) {
       cout << z << "\n";
     }
@@ -76,11 +82,9 @@ int main() {
       cin >> P;
 
       // TODO: binary search
-      long k = 1;
-      while (zamki[k].depth > P) {
-        k++;
-      }
-      k--;
+      int k =
+          upper_bound(leaves.begin(), leaves.end(), P, greater<long long>()) -
+          leaves.begin();
 
       cout << "k = " << k << "\n";
 
@@ -89,6 +93,6 @@ int main() {
       cout << "res " << result << "\n";
     }
 
-    return 0;
+    cout << "\n\n";
   }
 }
