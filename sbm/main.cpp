@@ -11,6 +11,26 @@ int main() {
   vector<unsigned char> board(n * m);
 
   const auto toIndex = [&](int x, int y) -> int { return y * m + x; };
+  const auto moveShip = [&](int &shipX, int &shipY) -> void { 
+    char vec = board[toIndex(shipX, shipY)];
+    // cout << shipX << " " << shipY << " " << vec << "\n";
+    switch (vec) {
+    case '^':
+      shipY--;
+      break;
+    case 'v':
+      shipY++;
+      break;
+    case '>':
+      shipX++;
+      break;
+    case '<':
+      shipX--;
+      break;
+    default:
+      assert(false);
+    }
+   };
 
   // read board
   for (int y = 0; y < n; y++) {
@@ -43,24 +63,7 @@ int main() {
 
     while (true) {
       moves++;
-      char vec = board[toIndex(shipX, shipY)];
-      // cout << shipX << " " << shipY << " " << vec << "\n";
-      switch (vec) {
-      case '^':
-        shipY--;
-        break;
-      case 'v':
-        shipY++;
-        break;
-      case '>':
-        shipX++;
-        break;
-      case '<':
-        shipX--;
-        break;
-      default:
-        assert(false);
-      }
+      moveShip(shipX, shipY);
 
       if (shipX < 0 || shipY < 0 || shipX >= m || shipY >= n) {
         break;
