@@ -1,4 +1,5 @@
 #include <cassert>
+#include <climits>
 #include <iostream>
 #include <tuple>
 #include <vector>
@@ -14,24 +15,7 @@ int main() {
   vector<std::tuple<int, int, int>> routes(n * m, {0, 0, 0});
 
   const auto toIndex = [&](int x, int y) -> int { return y * m + x; };
-  const auto shapeToBit = [&](const char &shape) -> int {
-    switch (shape) {
-    case '^':
-      return 1;
-      break;
-    case 'v':
-      return 2;
-      break;
-    case '>':
-      return 4;
-      break;
-    case '<':
-      return 8;
-      break;
-    default:
-      assert(false);
-    }
-  };
+
   const auto moveShip = [&](int &shipX, int &shipY) -> void {
     char vec = board[toIndex(shipX, shipY)];
     // cout << shipX << " " << shipY << " " << vec << "\n";
@@ -78,7 +62,6 @@ int main() {
     anomalyY--;
     questions[i] = {shipX, shipY, anomalyX, anomalyY, chr};
     isSpecial[toIndex(anomalyX, anomalyY)] = true;
-    isSpecial[toIndex(shipX, shipY)] = true;
   }
 
   for (int i = 0; i < q; i++) {
@@ -91,49 +74,77 @@ int main() {
     visited[toIndex(shipX, shipY)] = true;
 
     long moves = 0;
+    long _hadToWalk = 0;
+    int shipIndex = toIndex(shipX, shipY);
 
     // route
+    bool previousWasSpecial = isSpecial[shipIndex];
     int currRouteStartX = shipX;
     int currRouteStartY = shipY;
-    int currRouteLen = 0;
+    int currRouteLen = previousWasSpecial ? INT_MIN : 0;
+    int currRouteStartIndex = shipIndex;
 
     while (true) {
 
       // route load
-      auto [endX, endY, len] = routes[toIndex(shipX, shipY)];
+      auto [endX, endY, len] = routes[shipIndex];
       if (len != 0) {
-          moves += len;
-          shipX = endX;
-          shipY = endY;
-          // reset current route
+        moves += len;
+        shipX = endX;
+        shipY = endY;
+        // cout << "cache: saving " << len << " tiles\n";
+        // reset current route
+        currRouteLen = INT_MIN;
+        shipIndex = toIndex(shipX, shipY);
+        currRouteStartIndex = shipIndex;
+
+      } else {
+        moveShip(shipX, shipY);
+        shipIndex = toIndex(shipX, shipY);
+
+        moves++;
+        _hadToWalk++;
+        currRouteLen++;
+
+        if (shipX < 0 || shipY < 0 || shipX >= m || shipY >= n) {
+          // reached edge
+          break;
+        }
+
+        if (visited[shipIndex]) {
+          // loop detected,
+          // will never reach edge
+          moves = 0;
+          break;
+        }
+
+        // route start
+        if (previousWasSpecial && !isSpecial[shipIndex]) {
           currRouteStartX = shipX;
           currRouteStartY = shipY;
           currRouteLen = 0;
-      } else {
-        moveShip(shipX, shipY);
-        moves++;
-        currRouteLen++;
+          currRouteStartIndex = shipIndex;
+        } else
+
+          // route store
+          if (isSpecial[shipIndex] && currRouteLen > 0) {
+
+            routes[currRouteStartIndex] = {shipX, shipY, currRouteLen};
+
+            // if (isSpecial[shipIndex]) {
+            currRouteLen = INT_MIN;
+            // }
+            // else {
+            //   currRouteStartX = shipX;
+            //   currRouteStartY = shipY;
+            //   currRouteLen = 0;
+            //   currRouteStartIndex = shipIndex;
+            // }
+          }
       }
 
-
-      if (shipX < 0 || shipY < 0 || shipX >= m || shipY >= n) {
-        break;
-      }
-      if (visited[toIndex(shipX, shipY)]) {
-        moves = 0;
-        break;
-      }
-
-      if ((currRouteLen > 32 || isSpecial[toIndex(shipX, shipY)]) && len == 0) {
-        // cache current route
-        routes[toIndex(currRouteStartX, currRouteStartY)] = {shipX, shipY, currRouteLen};
-        currRouteStartX = shipX;
-        currRouteStartY = shipY;
-        currRouteLen = 0;
-      }
-
-  
-      visited[toIndex(shipX, shipY)] = true;
+      visited[shipIndex] = true;
+      previousWasSpecial = isSpecial[shipIndex];
     }
 
     cout << moves << "\n";
