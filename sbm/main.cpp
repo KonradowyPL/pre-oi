@@ -10,10 +10,12 @@ int main() {
 
   vector<unsigned char> board(n * m);
 
+  const auto toIndex = [&](int x, int y) -> int { return y * m + x; };
+
   // read board
   for (int y = 0; y < n; y++) {
     for (int x = 0; x < m; x++) {
-      cin >> board[y * m + x];
+      cin >> board[toIndex(x, y)];
     }
   }
 
@@ -23,7 +25,7 @@ int main() {
   while (q--) {
     int shipX, shipY, anomalyX, anomalyY;
     char chr;
-    cin >> shipX >> shipY >> anomalyX >> anomalyY >> chr;
+    cin >> shipY >> shipX >> anomalyY >> anomalyX >> chr;
 
     // to 0-index
     shipX--;
@@ -31,18 +33,18 @@ int main() {
     anomalyX--;
     anomalyY--;
 
-    unsigned char orig = board[anomalyY * m + anomalyX];
-    board[anomalyY * m + anomalyX] = chr;
+    unsigned char orig = board[toIndex(anomalyX, anomalyY)];
+    board[toIndex(anomalyX, anomalyY)] = chr;
 
     vector<bool> visited(n * m, false);
-    visited[shipY * m + shipX] = true;
+    visited[toIndex(shipX, shipY)] = true;
 
     long moves = 0;
 
     while (true) {
       moves++;
-      char vec = board[shipY * m + shipX];
-      cout << shipX << " " << shipY << " " << vec << "\n";
+      char vec = board[toIndex(shipX, shipY)];
+      // cout << shipX << " " << shipY << " " << vec << "\n";
       switch (vec) {
       case '^':
         shipY--;
@@ -60,17 +62,20 @@ int main() {
         assert(false);
       }
 
-      if (shipX < 0 || shipY < 0 || shipX >= m || shipY >= n ||
-          visited[shipY * m + shipX]) {
+      if (shipX < 0 || shipY < 0 || shipX >= m || shipY >= n) {
+        break;
+      } 
+      if (visited[toIndex(shipX, shipY)])  {
+        moves = 0;
         break;
       }
 
-      visited[shipY * m + shipX] = true;
+      visited[toIndex(shipX, shipY)] = true;
     }
 
     cout << moves << "\n";
 
     // restore
-    board[anomalyY * m + anomalyX] = orig;
+    board[toIndex(anomalyX, anomalyY)] = orig;
   }
 }
