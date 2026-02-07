@@ -81,7 +81,6 @@ int main() {
       long P;
       cin >> P;
 
-      // TODO: binary search
       int k =
           upper_bound(leaves.begin(), leaves.end(), P, greater<long long>()) -
           leaves.begin();
