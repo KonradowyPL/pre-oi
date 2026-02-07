@@ -6,6 +6,9 @@
 using namespace std;
 
 int main() {
+  // ios::sync_with_stdio(false);
+  // cin.tie(nullptr);
+
   long n, m;
   cin >> n >> m;
   // n = rows (Y), m = columns (X)
@@ -62,6 +65,7 @@ int main() {
     anomalyY--;
     questions[i] = {shipX, shipY, anomalyX, anomalyY, chr};
     isSpecial[toIndex(anomalyX, anomalyY)] = true;
+    isSpecial[toIndex(shipX, shipY)] = true;
   }
 
   for (int i = 0; i < q; i++) {
@@ -89,15 +93,23 @@ int main() {
       // route load
       auto [endX, endY, len] = routes[shipIndex];
       if (len != 0) {
-        moves += len;
+        moves += len & 0xffff;
         shipX = endX;
         shipY = endY;
         // cout << "cache: saving " << len << " tiles\n";
+
+        if (len > (0x1 << 15)) {
+          break;
+        }
+
         // reset current route
         currRouteLen = INT_MIN;
         shipIndex = toIndex(shipX, shipY);
-        currRouteStartIndex = shipIndex;
 
+        if (visited[shipIndex]) {
+          moves = 0;
+          break;
+        }
       } else {
         moveShip(shipX, shipY);
         shipIndex = toIndex(shipX, shipY);
@@ -108,6 +120,13 @@ int main() {
 
         if (shipX < 0 || shipY < 0 || shipX >= m || shipY >= n) {
           // reached edge
+
+          if (currRouteLen > 0) {
+            // cout << currRouteStartIndex << "idx\n";
+            routes[currRouteStartIndex] = {shipX, shipY,
+                                           currRouteLen + (0x1 << 16)};
+          }
+
           break;
         }
 
@@ -115,6 +134,11 @@ int main() {
           // loop detected,
           // will never reach edge
           moves = 0;
+
+          if (currRouteLen > 0) {
+            routes[currRouteStartIndex] = {shipX, shipY, currRouteLen};
+          }
+
           break;
         }
 
@@ -128,18 +152,8 @@ int main() {
 
           // route store
           if (isSpecial[shipIndex] && currRouteLen > 0) {
-
             routes[currRouteStartIndex] = {shipX, shipY, currRouteLen};
-
-            // if (isSpecial[shipIndex]) {
             currRouteLen = INT_MIN;
-            // }
-            // else {
-            //   currRouteStartX = shipX;
-            //   currRouteStartY = shipY;
-            //   currRouteLen = 0;
-            //   currRouteStartIndex = shipIndex;
-            // }
           }
       }
 
