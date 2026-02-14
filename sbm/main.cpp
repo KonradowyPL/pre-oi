@@ -78,7 +78,6 @@ int main() {
     visited[toIndex(shipX, shipY)] = true;
 
     long moves = 0;
-    long _hadToWalk = 0;
     int shipIndex = toIndex(shipX, shipY);
 
     // route
@@ -93,39 +92,37 @@ int main() {
       // route load
       auto [endX, endY, len] = routes[shipIndex];
       if (len != 0) {
-        moves += len & 0xffff;
-        shipX = endX;
-        shipY = endY;
         // cout << "cache: saving " << len << " tiles\n";
 
-        if (len > (0x1 << 15)) {
-          break;
-        }
-
-        // reset current route
-        currRouteLen = INT_MIN;
+        shipX = endX;
+        shipY = endY;
         shipIndex = toIndex(shipX, shipY);
 
         if (visited[shipIndex]) {
           moves = 0;
           break;
         }
+
+        moves += len & 0xffff;
+
+        if (len > (0x1 << 15)) {
+          break;
+        }
+
+        currRouteLen = INT_MIN;
+
       } else {
         moveShip(shipX, shipY);
         shipIndex = toIndex(shipX, shipY);
 
         moves++;
-        _hadToWalk++;
         currRouteLen++;
 
         if (shipX < 0 || shipY < 0 || shipX >= m || shipY >= n) {
           // reached edge
-
-          if (currRouteLen > 0) {
-            // cout << currRouteStartIndex << "idx\n";
+          if (currRouteLen > 0)
             routes[currRouteStartIndex] = {shipX, shipY,
                                            currRouteLen + (0x1 << 16)};
-          }
 
           break;
         }
@@ -135,9 +132,8 @@ int main() {
           // will never reach edge
           moves = 0;
 
-          if (currRouteLen > 0) {
+          if (currRouteLen > 0)
             routes[currRouteStartIndex] = {shipX, shipY, currRouteLen};
-          }
 
           break;
         }
