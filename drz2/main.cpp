@@ -8,7 +8,7 @@ using namespace std;
 auto getParent = [](long index) -> long { return (index - 1) / 2; };
 auto getLeft = [](long index) -> long { return 2 * index + 1; };
 auto getRight = [](long index) -> long { return 2 * index + 2; };
-auto getLeaf = [](long index, int n) -> long { return pow(2, n) - 1 + index; };
+auto getLeaf = [](long index, int n) -> long { return (1L << n) - 1 + index; };
 
 bool solve(long indexA, long indexB, const vector<array<int, 26>> &currTree,
            const vector<array<int, 26>> &preTree) {
@@ -21,10 +21,13 @@ bool solve(long indexA, long indexB, const vector<array<int, 26>> &currTree,
   if (a != b) {
     return false;
   }
-  // check normal
-  return (solve(getLeft(indexA), getLeft(indexB), currTree, preTree)) ||
-         // check swapped
-         (solve(getLeft(indexA), getRight(indexB), currTree, preTree));
+  return (
+             // check normal
+             solve(getLeft(indexA), getLeft(indexB), currTree, preTree) &&
+             solve(getRight(indexA), getRight(indexB), currTree, preTree)) ||
+         //  check swapped
+         (solve(getLeft(indexA), getRight(indexB), currTree, preTree) &&
+          solve(getRight(indexA), getLeft(indexB), currTree, preTree));
 }
 
 int main() {
@@ -70,9 +73,10 @@ int main() {
     long t, k;
     cin >> t >> k;
     k--; // to 0 indexed
-    char c;
+    unsigned char c;
     cin >> c;
     if (t == 1) {
+      // changing curr
       auto index = getLeaf(k, n);
       auto origChar = currNaz[k];
       currNaz[k] = c;
@@ -83,6 +87,7 @@ int main() {
         index = getParent(index);
       }
     } else {
+      // t == 2; changing pre
       auto index = getLeaf(k, n);
       auto origChar = preNaz[k];
       preNaz[k] = c;
