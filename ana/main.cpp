@@ -3,11 +3,13 @@
 using namespace std;
 
 long solve(const std::string &str, long startIdx) {
+  cout << "called with " << startIdx << "\n";
   vector<long> counter(26);
   vector<std::pair<long, long>> found;
-  long lastPalindrome = 0;
 
-  for (long i = 0; i < str.size(); i++) {
+  long longestSol = 0;
+
+  for (long i = startIdx; i < str.size(); i++) {
     auto ch = str[i];
     int chrId = ch - 97;
     counter[chrId]++;
@@ -27,26 +29,30 @@ long solve(const std::string &str, long startIdx) {
     }
     if (isPalindrome) {
       // decision: split or not?
-      lastPalindrome = i;
+      // try solving
+      auto a = solve(str, i + 1);
+      longestSol = max(longestSol, a);
     }
-    if (i == str.size() - 1) {
-      // clear out counter
-      for (int j = 0; j < 26; j++) {
-        counter[j] = 0;
+  }
+
+  // check if is palindrome
+  bool isPalindrome = true;
+  bool hasOdd = false;
+  for (auto c : counter) {
+    if (c % 2 != 0) {
+      if (hasOdd) {
+        isPalindrome = false;
+        break;
+      } else {
+        hasOdd = true;
       }
-      found.push_back({startIdx, lastPalindrome});
-      //
-      i = lastPalindrome;
-      startIdx = i + 1;
     }
   }
 
-  long longest = 0;
-  for (auto p : found) {
-    longest = max(longest, p.second - p.first);
+  if (isPalindrome) {
+    return longestSol;
   }
-
-  return longest;
+  return -1;
 }
 
 int main() {
@@ -56,4 +62,5 @@ int main() {
   cin >> str;
 
   auto s = solve(str, 0);
+  cout << "RESULT: " << s;
 }
