@@ -1,20 +1,17 @@
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <iostream>
-#include <queue>
 #include <vector>
 using namespace std;
-
-// tree const: (2 ^ (n + 1) - 1) * n => n * 2 ^ n
-// single quest: avg n, max 2^n
 
 auto getParent = [](long index) -> long { return (index - 1) / 2; };
 auto getLeft = [](long index) -> long { return 2 * index + 1; };
 auto getRight = [](long index) -> long { return 2 * index + 2; };
 auto getLeaf = [](long index, int n) -> long { return pow(2, n) - 1 + index; };
 
-bool solve(long indexA, long indexB, const vector<vector<long>> &currTree,
-           const vector<vector<long>> &preTree) {
+bool solve(long indexA, long indexB, const vector<array<int, 26>> &currTree,
+           const vector<array<int, 26>> &preTree) {
 
   if (indexA >= currTree.size() || indexB >= preTree.size())
     return true;
@@ -24,12 +21,16 @@ bool solve(long indexA, long indexB, const vector<vector<long>> &currTree,
   if (a != b) {
     return false;
   }
-
-  return solve(getLeft(indexA), getLeft(indexB), currTree, preTree) ||
-         solve(getLeft(indexA), getRight(indexB), currTree, preTree);
+  // check normal
+  return (solve(getLeft(indexA), getLeft(indexB), currTree, preTree)) ||
+         // check swapped
+         (solve(getLeft(indexA), getRight(indexB), currTree, preTree));
 }
 
 int main() {
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
+
   int n;
   long q;
   cin >> n >> q;
@@ -41,26 +42,19 @@ int main() {
   cin >> preNaz;
 
   // 2 ^ (n + 1) - 1
-  long treeSize = pow(2, n + 1) - 1;
+  long treeSize = (1L << (n + 1)) - 1;
 
-  vector<vector<long>> currTree(treeSize, std::vector<long>(26, 0));
-  vector<vector<long>> preTree(treeSize, std::vector<long>(26, 0));
+  vector<array<int, 26>> currTree(treeSize);
+  vector<array<int, 26>> preTree(treeSize);
 
-  // construct tree
-  for (long i = 0; i < currNaz.size(); i++) {
-    unsigned char c = currNaz[i];
-    long index = getLeaf(i, n);
-    for (int j = 0; j <= n; j++) {
-      currTree[index][c - 97]++;
-      index = getParent(index);
-    }
-  }
-  // construct second
+  // construct trees
   for (long i = 0; i < preNaz.size(); i++) {
-    unsigned char c = preNaz[i];
+    unsigned char c1 = currNaz[i];
+    unsigned char c2 = preNaz[i];
     long index = getLeaf(i, n);
     for (int j = 0; j <= n; j++) {
-      preTree[index][c - 97]++;
+      currTree[index][c1 - 97]++;
+      preTree[index][c2 - 97]++;
       index = getParent(index);
     }
   }
