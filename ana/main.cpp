@@ -1,21 +1,23 @@
 #include <climits>
 #include <iostream>
 #include <vector>
+
 using namespace std;
 
 #define MAX_N 200'001
 
-vector<int> cache(MAX_N, -1);
+std::vector<std::pair<long, long>> cache(MAX_N, {-1, -1});
 std::string str;
 
-long solve(long startIdx) {
-  cout << "called " << startIdx << "\n";
-  if (cache[startIdx] > 0) {
+std::pair<long, long> solve(long startIdx, long minLen = 0) {
+  if (cache[startIdx].first > 0) {
     return cache[startIdx];
   }
 
   // cout << "called " << startIdx << "\n";
-  vector<long> counter(26);
+  // vector<long> counter(26);
+  long long counter = 0;
+  long long oddCount = 0;
   vector<long> found;
 
   long len = 0;
@@ -23,72 +25,50 @@ long solve(long startIdx) {
   for (long i = startIdx; i < str.size(); i++) {
     auto ch = str[i];
     int chrId = ch - 'a';
-    counter[chrId]++;
     len++;
+    counter ^= 1L << chrId;
+    if ((counter & (1L << chrId)) == 0) {
+      oddCount--;
+    } else {
+      oddCount++;
+    }
 
     // check if is palindrome
-    bool isPalindrome = true;
-    bool hasOdd = false;
-    for (auto c : counter) {
-      if (c % 2 != 0) {
-        if (hasOdd) {
-          isPalindrome = false;
-          break;
-        } else {
-          hasOdd = true;
-        }
-      }
-    }
+    bool isPalindrome = (oddCount <= 1);
+
     if (isPalindrome) {
       if (i == str.size() - 1) {
-        cache[startIdx] = len;
-        return len;
+        cache[startIdx].first = len;
+        cache[startIdx].second = i + 1;
+        return cache[startIdx];
       }
       found.push_back(i + 1);
     }
   }
 
-  for (auto c : counter) {
-   cout << " " << c;
-  }
-  cout << "\n";
-  // cout << len << "\n";
-  return -1;
-  
-  
   long shortestSegment = 0;
+  long segmentEnd = -1;
 
   for (int j = found.size() - 1; j >= 0; j--) {
     long maxTheoreticalLen =
         min(found[j] - startIdx, long(str.size()) - found[j]);
 
-    if (maxTheoreticalLen <= shortestSegment)
+    if (maxTheoreticalLen <= shortestSegment || maxTheoreticalLen < minLen)
       continue;
 
-    auto a = solve(found[j]);
-    long l = min(found[j] - startIdx, a);
-    shortestSegment = max(shortestSegment, l);
+    const auto& [solLen, end] = solve(found[j], max(shortestSegment, minLen));
+    long l = min(found[j] - startIdx, solLen);
+    if (l > shortestSegment) {
+      shortestSegment = l;
+      segmentEnd = found[j];
+    }
   }
 
-  //   if (i == str.size() - 1) {
-  //   shortestSegment = len;
-  //   break;
-  // }
-  // // decision: split or not?
-  // // try solving
-  // if (len > 1 && len > minLen) {
-
-  //   auto a = solve(i + 1, min(shortestSegment, len));
-  //   long l = min(len, a);
-  //   if (a > shortestSegment) {
-  //     shortestSegment = l;
-  //   }
-  //   }
-
-  cache[startIdx] = shortestSegment;
+  cache[startIdx].first = shortestSegment;
+  cache[startIdx].second = segmentEnd;
 
   // cout << "for " << startIdx << " shortest: " << shortestSegment << "\n";
-  return shortestSegment;
+  return cache[startIdx];
 }
 
 int main() {
@@ -96,5 +76,23 @@ int main() {
   cin >> n;
   cin >> str;
   auto s = solve(0);
-  cout << "RESULT: " << s;
+  long i = 0;
+  vector<long> segments;
+  while (i != str.size()) {
+    segments.push_back(i);
+    i = cache[i].second;
+  }
+  segments.push_back(i);
+
+
+  cout << s.first << "\n";
+  cout << segments.size() - 1 << "\n";
+  auto prev = 0;
+  for( auto s : segments) {
+    if (s == 0) continue;
+
+    cout << prev + 1 << " " << s << "\n";
+
+    prev = s;
+  }
 }
