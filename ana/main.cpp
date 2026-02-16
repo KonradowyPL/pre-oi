@@ -5,23 +5,26 @@ using namespace std;
 
 #define MAX_N 200'001
 
-vector<int> cache(MAX_N, -1);  
+vector<int> cache(MAX_N, -1);
 std::string str;
 
 long solve(long startIdx) {
+  cout << "called " << startIdx << "\n";
   if (cache[startIdx] > 0) {
     return cache[startIdx];
   }
 
   // cout << "called " << startIdx << "\n";
   vector<long> counter(26);
+  vector<long> found;
 
-  long shortestSegment = 0;
+  long len = 0;
 
   for (long i = startIdx; i < str.size(); i++) {
     auto ch = str[i];
     int chrId = ch - 'a';
     counter[chrId]++;
+    len++;
 
     // check if is palindrome
     bool isPalindrome = true;
@@ -38,19 +41,51 @@ long solve(long startIdx) {
     }
     if (isPalindrome) {
       if (i == str.size() - 1) {
-        shortestSegment = i - startIdx + 1;
-        break;
+        cache[startIdx] = len;
+        return len;
       }
-      // decision: split or not?
-      // try solving
-      auto a = solve(i + 1);
-      long l = min(i - startIdx + 1, a);
-      if (a > shortestSegment) {
-        shortestSegment = l;
-      }
+      found.push_back(i + 1);
     }
   }
- cache[startIdx] = shortestSegment;
+
+  for (auto c : counter) {
+   cout << " " << c;
+  }
+  cout << "\n";
+  // cout << len << "\n";
+  return -1;
+  
+  
+  long shortestSegment = 0;
+
+  for (int j = found.size() - 1; j >= 0; j--) {
+    long maxTheoreticalLen =
+        min(found[j] - startIdx, long(str.size()) - found[j]);
+
+    if (maxTheoreticalLen <= shortestSegment)
+      continue;
+
+    auto a = solve(found[j]);
+    long l = min(found[j] - startIdx, a);
+    shortestSegment = max(shortestSegment, l);
+  }
+
+  //   if (i == str.size() - 1) {
+  //   shortestSegment = len;
+  //   break;
+  // }
+  // // decision: split or not?
+  // // try solving
+  // if (len > 1 && len > minLen) {
+
+  //   auto a = solve(i + 1, min(shortestSegment, len));
+  //   long l = min(len, a);
+  //   if (a > shortestSegment) {
+  //     shortestSegment = l;
+  //   }
+  //   }
+
+  cache[startIdx] = shortestSegment;
 
   // cout << "for " << startIdx << " shortest: " << shortestSegment << "\n";
   return shortestSegment;
@@ -60,7 +95,6 @@ int main() {
   long n;
   cin >> n;
   cin >> str;
-
   auto s = solve(0);
   cout << "RESULT: " << s;
 }
