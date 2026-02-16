@@ -46,6 +46,7 @@ int main() {
 
   // 2 ^ (n + 1) - 1
   long treeSize = (1L << (n + 1)) - 1;
+  cout << "size " << treeSize << "\n";
 
   vector<array<int, 26>> currTree(treeSize);
   vector<array<int, 26>> preTree(treeSize);
@@ -58,6 +59,7 @@ int main() {
     for (int j = 0; j <= n; j++) {
       currTree[index][c1 - 97]++;
       preTree[index][c2 - 97]++;
+      cout << "index " << index << "\n";
       index = getParent(index);
     }
   }
