@@ -96,3 +96,10 @@ int main() {
     prev = s;
   }
 }
+
+// - vector zamiast setu, std::array jezeli znana długość (eg: alfabet)
+// - binary search zazwyczaj działa
+// - testy zapewne nie sprawdzają edge caseów
+// - -fsanitize=address,undefined -fno-omit-frame-pointer -D_GLIBCXX_DEBUG
+// - multiset istnieje
+// - prefer unordered_set niz set
